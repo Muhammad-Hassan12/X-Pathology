@@ -511,7 +511,7 @@ export default function XPathologyPage() {
     const timeoutId = setTimeout(() => controller.abort(), 35000);
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/analyze`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://rarfileexe-xpathology-backend.hf.space"}/api/analyze`, {
         method: "POST",
         body: formData,
         signal: controller.signal,

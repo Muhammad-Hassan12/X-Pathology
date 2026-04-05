@@ -317,7 +317,7 @@ npm run dev
 
 | Variable | Required | Default | Description |
 |----------|:--------:|---------|-------------|
-| `NEXT_PUBLIC_API_URL` | ❌ | `http://localhost:8000` | Backend API base URL |
+| `NEXT_PUBLIC_API_URL` | ❌ | `https://rarfileexe-xpathology-backend.hf.space` | Backend API base URL |
 
 ---
 
