@@ -755,20 +755,20 @@ export default function AboutPage() {
                   width: 80,
                   height: 80,
                   borderRadius: "50%",
-                  background:
-                    "linear-gradient(135deg, rgba(0,210,150,0.15), rgba(33,150,243,0.15))",
                   border: "2px solid rgba(0,210,150,0.3)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
                   margin: "0 auto 16px",
-                  fontSize: "1.8rem",
-                  fontFamily: "var(--font-display)",
-                  fontWeight: 700,
-                  color: "var(--accent)",
+                  overflow: "hidden",
                 }}
               >
-                SH
+                <img
+                  src="https://github.com/Muhammad-Hassan12.png"
+                  alt="Syed Muhammad Hassan"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
+                />
               </div>
 
               <h3
