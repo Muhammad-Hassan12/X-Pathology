@@ -83,14 +83,14 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 │                           X-PATHOLOGY PIPELINE                              │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│   ┌─────────────┐     ┌─────────────────┐     ┌──────────────────────────┐  │
+│   ┌──────────────┐     ┌──────────────────┐     ┌──────────────────────────┐  │
 │   │   Next.js    │     │    FastAPI       │     │    Model Inference       │  │
-│   │   Frontend   │────▶│    Backend       │────▶│    (MobileNetV2)         │  │
+│   │   Frontend   │────▶│    Backend       │────▶│    (MobileNetV2)        │  │
 │   │              │     │                  │     │                          │  │
 │   │  • Upload    │     │  • Image decode  │     │  • 224×224 preprocessing │  │
 │   │  • Sample    │     │  • Validation    │     │  • 5-class softmax       │  │
 │   │    Gallery   │     │  • Rate limiting │     │  • Confidence scoring    │  │
-│   └─────────────┘     └────────┬─────────┘     └─────────┬────────────────┘  │
+│   └──────────────┘     └────────┬─────────┘     └─────────┬────────────────┘  │
 │                                │                          │                   │
 │                                │                          ▼                   │
 │                                │                ┌──────────────────────┐      │
