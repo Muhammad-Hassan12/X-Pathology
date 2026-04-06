@@ -57,6 +57,8 @@
 
 Instead of relying on a "black box" prediction, X-Pathology employs a **multimodal architecture** that visually explains its reasoning through Grad-CAM heatmaps and generates compassionate, human-readable reports via Google's Gemini LLM — producing **dual-persona output** for both oncologists and patients.
 
+Here is the Repo link of the training process of the model, used in this project: https://github.com/Muhammad-Hassan12/Cancer-Prediction-Model-2.0
+
 > **Why X-Pathology?**  
 > The "X" stands for **Explainability** — the core philosophy that every AI prediction in a medical context must be transparent, interpretable, and verifiable by a human expert.
 
