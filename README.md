@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <em>A portfolio project for research & educational purposes only.</em>
+  <em>This project is for research & educational purposes only.</em>
 </p>
 
 </div>
