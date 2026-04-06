@@ -13,6 +13,7 @@ export default function Header() {
 
   return (
     <header
+      className="mobile-header-padding"
       style={{
         borderBottom: "1px solid var(--border)",
         padding: "0 2rem",
@@ -49,6 +50,7 @@ export default function Header() {
             letterSpacing: "0.06em",
             color: "var(--fg)",
             textDecoration: "none",
+            whiteSpace: "nowrap",
           }}
         >
           X-PATHOLOGY

@@ -79,6 +79,7 @@ function UploadZone({
 
   return (
     <div
+      className="mobile-upload-padding"
       onClick={() => inputRef.current?.click()}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
@@ -431,27 +432,27 @@ function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: Fi
               opacity: disabled ? 0.5 : 1,
             }}
             onMouseOver={(e) => {
-              if(!disabled) {
+              if (!disabled) {
                 e.currentTarget.style.borderColor = "var(--accent)";
                 e.currentTarget.style.background = "rgba(0,210,150,0.08)";
               }
             }}
             onMouseOut={(e) => {
-              if(!disabled) {
+              if (!disabled) {
                 e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
                 e.currentTarget.style.background = "rgba(255,255,255,0.03)";
               }
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img 
-              src={s.path} 
-              alt={s.name} 
-              style={{ width: 28, height: 28, borderRadius: 4, objectFit: "cover" }} 
+            <img
+              src={s.path}
+              alt={s.name}
+              style={{ width: 28, height: 28, borderRadius: 4, objectFit: "cover" }}
             />
-            <span style={{ 
-              fontFamily: "var(--font-mono)", 
-              fontSize: "0.7rem", 
+            <span style={{
+              fontFamily: "var(--font-mono)",
+              fontSize: "0.7rem",
               color: "var(--fg-muted)"
             }}>
               {s.name}
@@ -524,7 +525,7 @@ export default function XPathologyPage() {
         try {
           const parsed = JSON.parse(errText);
           if (parsed.error) throw new Error(parsed.error);
-        } catch (_) {}
+        } catch (_) { }
         throw new Error(errText || `Server error: ${res.status}`);
       }
 
@@ -554,6 +555,7 @@ export default function XPathologyPage() {
       <div style={{ position: "relative", zIndex: 1 }}>
 
         <main
+          className="mobile-main-padding"
           style={{
             maxWidth: 1100,
             margin: "0 auto",
@@ -580,7 +582,7 @@ export default function XPathologyPage() {
             <h1
               style={{
                 fontFamily: "var(--font-display)",
-                fontSize: "clamp(2.2rem, 5vw, 3.6rem)",
+                fontSize: "clamp(1.5rem, 8vw, 3.6rem)",
                 fontWeight: 800,
                 lineHeight: 1.1,
                 letterSpacing: "-0.02em",
@@ -619,7 +621,7 @@ export default function XPathologyPage() {
 
           {/* ── Upload Panel ── */}
           <section
-            className="fade-up-1"
+            className="fade-up-1 mobile-section-padding"
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
