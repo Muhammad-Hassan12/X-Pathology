@@ -465,7 +465,7 @@ X-Pathology underwent a significant architectural evolution to meet production-g
 
 ## 📄 License
 
-This project is provided as-is for educational and portfolio purposes. All rights reserved by [Syed Muhammad Hassan](https://github.com/Muhammad-Hassan12).
+This project is Open-Source and available under [Apache-2.0 License](LICENSE)
 
 ---
 
