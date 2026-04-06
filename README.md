@@ -463,6 +463,18 @@ X-Pathology underwent a significant architectural evolution to meet production-g
 
 ---
 
+## 🤝 Contributing
+
+Contributions are welcome! If you'd like to improve **X-Pathology**:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+---
+
 ## 📄 License
 
 This project is Open-Source and available under [Apache-2.0 License](LICENSE)
