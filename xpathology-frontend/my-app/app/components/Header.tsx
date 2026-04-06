@@ -29,7 +29,7 @@ export default function Header() {
       }}
     >
       {/* Left — Brand */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div className="header-left">
         <span
           style={{
             display: "inline-block",
@@ -58,13 +58,7 @@ export default function Header() {
       </div>
 
       {/* Center — Nav */}
-      <nav
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-        }}
-      >
+      <nav className="header-nav">
         {NAV_LINKS.map((link) => {
           const isActive = pathname === link.href;
           return (
@@ -109,7 +103,13 @@ export default function Header() {
 
       {/* Right — Tagline & GitHub Link */}
       <style>{`
+        .header-left { display: flex; align-items: center; gap: 10px; }
         .header-right { display: flex; align-items: center; gap: 16px; }
+        .header-nav { display: flex; align-items: center; gap: 6px; }
+        @media (min-width: 769px) {
+          .header-left { flex: 1; }
+          .header-right { flex: 1; justify-content: flex-end; }
+        }
         .header-tagline { display: block; }
         @media (max-width: 768px) { .header-tagline { display: none; } }
       `}</style>
