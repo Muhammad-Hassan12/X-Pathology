@@ -73,7 +73,7 @@ function AnimatedStat({
         }}
       >
         <span className="gradient-text">
-          {suffix === "MB" ? count.toFixed(1) : count}
+          {suffix === "%" ? count.toFixed(1) : count}
           {suffix}
         </span>
       </div>
@@ -280,7 +280,7 @@ export default function AboutPage() {
           >
             The Engineering Journey
             <br />
-            <span className="gradient-text">From Proof-of-Concept to Production</span>
+            <span className="gradient-text">From Proof-of-Concept to Specialist</span>
           </h1>
           <p
             style={{
@@ -292,9 +292,9 @@ export default function AboutPage() {
             }}
           >
             Building a reliable medical AI requires rigorous iteration.
-            The X-Pathology pipeline underwent a significant architectural
-            evolution to ensure the highest standards of inference speed,
-            mathematical calibration, and diagnostic safety.
+            X-Pathology has evolved through three major architectural versions —
+            from a binary VGG16 baseline to a 9-class temperature-calibrated
+            EfficientNetB1 Colon Specialist with external holdout validation.
           </p>
         </section>
 
@@ -309,9 +309,9 @@ export default function AboutPage() {
             marginBottom: "4rem",
           }}
         >
-          <AnimatedStat value={5} suffix="" label="Tissue Classes" delay={0} />
-          <AnimatedStat value={8.6} suffix="MB" label="Model Size" delay={0.1} />
-          <AnimatedStat value={98} suffix="%" label="Accuracy" delay={0.2} />
+          <AnimatedStat value={9} suffix="" label="Tissue Classes" delay={0} />
+          <AnimatedStat value={99.1} suffix="%" label="Internal Accuracy" delay={0.1} />
+          <AnimatedStat value={92.7} suffix="%" label="External Holdout" delay={0.2} />
           <AnimatedStat value={2} suffix="" label="Report Modes" delay={0.3} />
         </section>
 
@@ -333,7 +333,6 @@ export default function AboutPage() {
               overflow: "hidden",
             }}
           >
-            {/* Version badge */}
             <div
               style={{
                 position: "absolute",
@@ -402,12 +401,128 @@ export default function AboutPage() {
 
           {/* Arrow */}
           <div style={{ display: "flex", justifyContent: "center", margin: "8px 0" }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5">
               <path d="M12 5v14M5 12l7 7 7-7" />
             </svg>
           </div>
 
           {/* Version 2.0 */}
+          <div
+            style={{
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid var(--border)",
+              borderRadius: 16,
+              padding: "2rem",
+              marginBottom: 20,
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                padding: "6px 16px",
+                background: "rgba(255,180,0,0.08)",
+                borderBottomLeftRadius: 12,
+                border: "1px solid rgba(255,180,0,0.15)",
+                borderTop: "none",
+                borderRight: "none",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.65rem",
+                  color: "rgba(255,180,0,0.8)",
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                }}
+              >
+                Superseded
+              </span>
+            </div>
+
+            <h3
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "1.15rem",
+                fontWeight: 700,
+                color: "var(--fg)",
+                marginBottom: 6,
+              }}
+            >
+              Version 2.0: The Multi-Organ Experiment{" "}
+              <span style={{ color: "var(--muted)", fontWeight: 400 }}>(MobileNetV2)</span>
+            </h3>
+            <p
+              style={{
+                fontSize: "0.84rem",
+                color: "var(--fg-muted)",
+                lineHeight: 1.75,
+                marginBottom: 18,
+              }}
+            >
+              We transitioned to a lightweight <strong style={{ color: "var(--fg)" }}>MobileNetV2</strong> backbone (8.6 MB)
+              and expanded to a 5-class multi-organ model covering both Colon and Lung histopathology.
+              This achieved ~98% accuracy and eliminated the binary overconfidence issue.
+            </p>
+            <p
+              style={{
+                fontSize: "0.84rem",
+                color: "var(--fg-muted)",
+                lineHeight: 1.75,
+                marginBottom: 18,
+              }}
+            >
+              <strong style={{ color: "#ff8080" }}>However, a critical problem emerged:</strong> although the model detected cancer
+              accurately, it sometimes produced <em>organ-mismatched reports</em> — classifying colon tissue
+              with a lung report and vice versa. This cross-organ confusion made the multi-organ
+              approach unreliable for clinical-grade screening and motivated a fundamental rethinking
+              of the model scope.
+            </p>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: 14,
+              }}
+            >
+              {[
+                { icon: "✅", label: "Cancer detection accurate" },
+                { icon: "✅", label: "17× smaller than VGG16" },
+                { icon: "⚠️", label: "Organ confusion in reports" },
+              ].map((item, i) => (
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 14px",
+                    borderRadius: 8,
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid var(--border)",
+                    fontSize: "0.78rem",
+                    color: "var(--fg-muted)",
+                  }}
+                >
+                  <span>{item.icon}</span> {item.label}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Arrow */}
+          <div style={{ display: "flex", justifyContent: "center", margin: "8px 0" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5">
+              <path d="M12 5v14M5 12l7 7 7-7" />
+            </svg>
+          </div>
+
+          {/* Version 3.0 — CURRENT */}
           <div
             style={{
               background: "rgba(0,210,150,0.02)",
@@ -419,7 +534,6 @@ export default function AboutPage() {
               boxShadow: "0 0 40px rgba(0,210,150,0.04)",
             }}
           >
-            {/* Version badge */}
             <div
               style={{
                 position: "absolute",
@@ -455,8 +569,8 @@ export default function AboutPage() {
                 marginBottom: 6,
               }}
             >
-              Version 2.0: The Multiclass Optimization{" "}
-              <span style={{ color: "var(--accent)", fontWeight: 400 }}>(MobileNetV2)</span>
+              Version 3.0: The Colon Specialist{" "}
+              <span style={{ color: "var(--accent)", fontWeight: 400 }}>(EfficientNetB1)</span>
             </h3>
             <p
               style={{
@@ -466,10 +580,13 @@ export default function AboutPage() {
                 marginBottom: 22,
               }}
             >
-              To achieve enterprise-grade calibration, we completely re-architected the core visual
-              engine. We transitioned to a highly optimized <strong style={{ color: "var(--fg)" }}>MobileNetV2</strong> backbone
-              and expanded the diagnostic scope to a complex 5-class multi-organ model (covering
-              both Colon and Lung histopathology).
+              To solve the organ-confusion problem, we adopted a <strong style={{ color: "var(--fg)" }}>single-organ specialist</strong> strategy.
+              The new <strong style={{ color: "var(--fg)" }}>EfficientNetB1</strong> backbone is trained exclusively on the
+              NCT-CRC-HE-100K dataset and validated on the independent CRC-VAL-HE-7K holdout set —
+              achieving <strong style={{ color: "var(--accent)" }}>99.1% internal accuracy</strong> and{" "}
+              <strong style={{ color: "var(--accent)" }}>92.7% on a completely separate external dataset</strong>. The model
+              classifies 9 distinct colorectal tissue types with post-training temperature calibration
+              (T=0.5576) for trustworthy confidence values.
             </p>
 
             {/* Milestones */}
@@ -483,21 +600,27 @@ export default function AboutPage() {
               {[
                 {
                   num: "01",
-                  title: "Precision Calibration",
-                  desc: `Moving to a 5-class softmax output eliminated the binary saturation issue, forcing the model to learn highly specific, nuanced morphological features rather than relying on extreme edge weights.`,
+                  title: "Single-Organ Focus",
+                  desc: "By focusing exclusively on colorectal tissue, we eliminated the cross-organ confusion that plagued V2. Every prediction now maps to a well-defined colon tissue type with zero ambiguity about organ source.",
                   accent: "var(--accent)",
                 },
                 {
                   num: "02",
-                  title: "Radical Efficiency",
-                  desc: "We reduced the model footprint from over 150MB down to an ultra-lightweight 8.6MB. This massive reduction in parameters allows for near-instantaneous inference and seamless cloud deployment without compromising our ~98% accuracy benchmark.",
+                  title: "9-Class Granularity",
+                  desc: "From 5 broad classes to 9 fine-grained tissue types (ADI, BACK, DEB, LYM, MUC, MUS, NORM, STR, TUM). This enables precise morphological classification at the patch level, far beyond simple malignant/benign.",
                   accent: "var(--accent-blue)",
                 },
                 {
                   num: "03",
-                  title: "Enhanced XAI Mapping",
-                  desc: "The streamlined convolutional blocks of MobileNetV2 generate tighter, more precise Grad-CAM heatmaps, allowing the downstream LLM to analyze highly specific architectural aberrations.",
+                  title: "Temperature Calibration",
+                  desc: "Post-training temperature scaling (T=0.5576) ensures confidence values are statistically calibrated — when the model says 90%, it means 90%. Critical for clinical decision-support systems.",
                   accent: "#a78bfa",
+                },
+                {
+                  num: "04",
+                  title: "External Validation",
+                  desc: "Independently validated on CRC-VAL-HE-7K — a completely separate dataset from different scanning equipment, confirming genuine generalisation. The TUM class achieves F1=0.9558 on holdout.",
+                  accent: "#f59e0b",
                 },
               ].map((m) => (
                 <div
@@ -565,38 +688,45 @@ export default function AboutPage() {
             <PipelineStep
               step={1}
               icon="📤"
-              title="Upload H&E Slide"
-              description="Upload a histopathology tissue section image (JPEG/PNG). The system accepts standard H&E stained slides from colon and lung biopsies."
+              title="Upload H&E Colorectal Patch"
+              description="Upload a histopathology tissue section image (JPEG/PNG/TIFF). The system accepts standard H&E stained patches from colorectal biopsies at 240×240 resolution."
               delay={0.1}
             />
             <PipelineStep
               step={2}
               icon="🧠"
-              title="MobileNetV2 CNN Inference"
-              description="The optimized MobileNetV2 model classifies the tissue into one of 5 categories: Colon Adenocarcinoma, Colon Benign, Lung Adenocarcinoma, Lung Benign, or Lung Squamous Cell Carcinoma."
+              title="EfficientNetB1 CNN Inference"
+              description="The Colon Specialist model classifies the tissue into one of 9 colorectal tissue types: Adipose, Background, Debris, Lymphocytes, Mucus, Smooth Muscle, Normal Mucosa, Cancer-Associated Stroma, or Tumour."
               delay={0.2}
             />
             <PipelineStep
               step={3}
-              icon="🔥"
-              title="Grad-CAM XAI Heatmap"
-              description="Gradient-weighted Class Activation Mapping generates a visual explanation of which cellular structures the CNN focused on. Red/yellow regions indicate high attention areas."
+              icon="🌡"
+              title="Temperature-Calibrated Confidence"
+              description="Post-training temperature scaling (T=0.5576) converts raw logits into statistically calibrated probabilities. This ensures confidence scores reflect true predictive uncertainty."
               delay={0.3}
             />
             <PipelineStep
               step={4}
-              icon="✨"
-              title="Gemini LLM Analysis"
-              description="Both the original slide and the Grad-CAM overlay are sent to Google's Gemini API, which generates a dual-persona report with clinical and patient-friendly sections."
+              icon="🔥"
+              title="Grad-CAM XAI Heatmap"
+              description="Gradient-weighted Class Activation Mapping taps the last EfficientNet convolutional block (block7a_project_bn) to generate visual explanations of CNN attention regions."
               delay={0.4}
             />
             <PipelineStep
               step={5}
+              icon="✨"
+              title="Gemini 2.5 Flash LLM Analysis"
+              description="Both the original H&E slide and the Grad-CAM overlay are sent to Google's Gemini multimodal model, which generates a dual-persona report with clinical pathology and patient-friendly sections."
+              delay={0.5}
+            />
+            <PipelineStep
+              step={6}
               icon="📋"
               title="Dual-Persona Report"
-              description="The final output includes a clinical pathology report for professionals and a compassionate plain-English summary for patients, along with confidence scores and visual explanations."
+              description="The final output includes a structured Clinical Pathology Report for professionals and a compassionate plain-English Patient-Facing Summary, along with a 9-class probability breakdown and visual explanations."
               isLast
-              delay={0.5}
+              delay={0.6}
             />
           </div>
         </section>
@@ -617,13 +747,13 @@ export default function AboutPage() {
             {[
               {
                 name: "TensorFlow / Keras",
-                desc: "Deep learning backbone powering the MobileNetV2 fine-tuned model for 5-class histopathology classification.",
+                desc: "Deep learning backbone powering the EfficientNetB1 Colon Specialist for 9-class colorectal histopathology classification with temperature-calibrated inference.",
                 color: "#ff6f00",
                 icon: "🧪",
               },
               {
                 name: "FastAPI",
-                desc: "High-performance async Python backend handling image preprocessing, CNN inference, and Grad-CAM generation.",
+                desc: "High-performance async Python backend handling image preprocessing, CNN inference, Grad-CAM generation, and calibrated probability computation.",
                 color: "#009688",
                 icon: "⚡",
               },
@@ -634,20 +764,20 @@ export default function AboutPage() {
                 icon: "⚛️",
               },
               {
-                name: "Gemini API",
-                desc: "Google's multimodal LLM that analyzes both the slide and heatmap to produce dual-persona clinical reports.",
+                name: "Gemini 2.5 Flash",
+                desc: "Google's multimodal LLM that analyzes both the slide and heatmap to produce dual-persona clinical reports with visual verification.",
                 color: "#4285f4",
                 icon: "💎",
               },
               {
                 name: "Grad-CAM",
-                desc: "Explainable AI technique generating visual heatmaps of CNN attention, making model decisions interpretable for clinicians.",
+                desc: "Explainable AI technique generating visual heatmaps of CNN attention via the final EfficientNet convolutional block, making model decisions interpretable.",
                 color: "#e040fb",
                 icon: "🔬",
               },
               {
                 name: "Hugging Face Hub",
-                desc: "Cloud-based model hosting and versioning, enabling seamless model downloads and deployment across environments.",
+                desc: "Cloud-based model hosting at rarfileexe/Xpathology-Colon-Specialist, enabling versioned model downloads with temperature calibration assets.",
                 color: "#ffca28",
                 icon: "🤗",
               },
@@ -1014,7 +1144,20 @@ export default function AboutPage() {
             SUPPORTED CLASSIFICATIONS
         ═══════════════════════════════════════════════════════════════ */}
         <section className="fade-up-5" style={{ marginBottom: "2rem" }}>
-          <SectionLabel label="Supported Classifications" />
+          <SectionLabel label="9-Class Tissue Classification" />
+
+          <p
+            style={{
+              fontSize: "0.84rem",
+              color: "var(--fg-muted)",
+              lineHeight: 1.7,
+              marginBottom: 20,
+            }}
+          >
+            The EfficientNetB1 Colon Specialist classifies H&amp;E-stained colorectal tissue patches
+            into 9 distinct tissue categories. Only the <strong style={{ color: "#ff8080" }}>TUM</strong> class
+            is considered clinically neoplastic (malignant).
+          </p>
 
           <div
             style={{
@@ -1024,16 +1167,20 @@ export default function AboutPage() {
             }}
           >
             {[
-              { name: "Colon Adenocarcinoma", type: "Malignant", organ: "Colon" },
-              { name: "Colon Benign Tissue", type: "Benign", organ: "Colon" },
-              { name: "Lung Adenocarcinoma", type: "Malignant", organ: "Lung" },
-              { name: "Lung Benign Tissue", type: "Benign", organ: "Lung" },
-              { name: "Lung Squamous Cell Carcinoma", type: "Malignant", organ: "Lung" },
+              { code: "ADI", name: "Adipose Tissue", type: "Benign", desc: "Fat tissue surrounding the colon" },
+              { code: "BACK", name: "Background", type: "Benign", desc: "Non-tissue background regions" },
+              { code: "DEB", name: "Debris / Necrosis", type: "Benign", desc: "Cellular debris and necrotic tissue" },
+              { code: "LYM", name: "Lymphocytes", type: "Benign", desc: "Immune cell aggregates and infiltrates" },
+              { code: "MUC", name: "Mucus", type: "Benign", desc: "Mucinous secretions and pools" },
+              { code: "MUS", name: "Smooth Muscle", type: "Benign", desc: "Muscularis propria / muscularis mucosae" },
+              { code: "NORM", name: "Normal Colon Mucosa", type: "Benign", desc: "Healthy epithelial glandular tissue" },
+              { code: "STR", name: "Cancer-Associated Stroma", type: "Benign", desc: "Desmoplastic stromal reaction tissue" },
+              { code: "TUM", name: "Colorectal Adenocarcinoma", type: "Malignant", desc: "Tumour epithelium — neoplastic" },
             ].map((cls) => {
               const isMalignant = cls.type === "Malignant";
               return (
                 <div
-                  key={cls.name}
+                  key={cls.code}
                   style={{
                     padding: "16px 18px",
                     borderRadius: 12,
@@ -1069,7 +1216,7 @@ export default function AboutPage() {
                         textTransform: "uppercase",
                       }}
                     >
-                      {cls.type}
+                      {cls.code} · {cls.type}
                     </span>
                   </div>
                   <p
@@ -1078,20 +1225,19 @@ export default function AboutPage() {
                       fontSize: "0.85rem",
                       fontWeight: 600,
                       color: "var(--fg)",
-                      marginBottom: 2,
+                      marginBottom: 4,
                     }}
                   >
                     {cls.name}
                   </p>
                   <span
                     style={{
-                      fontFamily: "var(--font-mono)",
-                      fontSize: "0.62rem",
+                      fontSize: "0.72rem",
                       color: "var(--muted)",
-                      letterSpacing: "0.06em",
+                      lineHeight: 1.4,
                     }}
                   >
-                    {cls.organ} Histopathology
+                    {cls.desc}
                   </span>
                 </div>
               );

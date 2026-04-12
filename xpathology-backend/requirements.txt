@@ -1,12 +1,12 @@
 fastapi>=0.110.0
-uvicorn>=0.29.0
-tensorflow>=2.16.0
+uvicorn[standard]>=0.29.0
+tensorflow-cpu>=2.16.0
 keras>=3.0.0
 numpy>=1.26.0
 opencv-python-headless>=4.9.0
 Pillow>=10.2.0
-google-generativeai>=0.5.0
+google-genai>=1.0.0
 huggingface-hub>=0.22.0
-python-multipart
+python-multipart>=0.0.9
 python-dotenv>=1.0.0
 slowapi>=0.1.9

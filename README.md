@@ -2,7 +2,7 @@
 
 # X-Pathology 🔬
 
-### Explainable AI-Assisted Oncology Screening for Histopathology
+### Explainable AI-Assisted Colorectal Oncology Screening
 
 **Classify · Explain · Report — in one pipeline.**
 
@@ -11,7 +11,7 @@
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
 [![Gemini](https://img.shields.io/badge/Gemini_2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Hugging Face](https://img.shields.io/badge/🤗_Hugging_Face-FFD21E?style=for-the-badge)](https://huggingface.co/rarfileexe/XPathology-CNN_2.0_advance)
+[![Hugging Face](https://img.shields.io/badge/🤗_Hugging_Face-FFD21E?style=for-the-badge)](https://huggingface.co/rarfileexe/Xpathology-Colon-Specialist)
 
 ---
 
@@ -53,7 +53,7 @@
 
 ## 🧬 Overview
 
-**X-Pathology** is an end-to-end **Explainable AI (XAI)** pipeline designed to bridge the gap between deep learning diagnostics and clinical interpretability. Built to analyze **H&E-stained histopathology slides**, this system provides rapid, transparent, and highly calibrated multi-organ tissue analysis for colon and lung histopathology.
+**X-Pathology** is an end-to-end **Explainable AI (XAI)** pipeline designed to bridge the gap between deep learning diagnostics and clinical interpretability. Built to analyze **H&E-stained colorectal histopathology patches**, this system provides rapid, transparent, and highly calibrated 9-class tissue classification for colorectal tissue analysis.
 
 Instead of relying on a "black box" prediction, X-Pathology employs a **multimodal architecture** that visually explains its reasoning through Grad-CAM heatmaps and generates compassionate, human-readable reports via Google's Gemini LLM — producing **dual-persona output** for both oncologists and patients.
 
@@ -66,10 +66,13 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 
 | Feature | Description |
 |---|---|
-| **5-Class Tissue Classification** | Classifies colon & lung histopathology across 5 distinct tissue states with ~98% accuracy using an optimized MobileNetV2 backbone. |
+| **9-Class Tissue Classification** | Classifies colorectal histopathology into 9 distinct tissue types (ADI, BACK, DEB, LYM, MUC, MUS, NORM, STR, TUM) using a fine-tuned EfficientNetB1 backbone. |
+| **Temperature-Calibrated Confidence** | Post-training temperature scaling (T=0.5576) ensures confidence values are statistically calibrated — critical for clinical decision-support. |
+| **External Holdout Validation** | Independently validated on CRC-VAL-HE-7K — a completely separate dataset from different scanning equipment — achieving 92.7% accuracy. |
 | **Grad-CAM Visual Explainability** | Custom XAI layer generates precise heatmaps highlighting the exact cellular structures and architectural aberrations driving CNN predictions. |
 | **Dual-Persona LLM Reporting** | Gemini 2.5 Flash acts as a clinical safety layer — visually verifying the heatmap and generating both a dense **Clinical Pathology Report** (for oncologists) and a jargon-free **Patient-Facing Summary**. |
-| **Interactive Sample Gallery** | 5 pre-loaded histopathology slides for instant demo — no upload needed. Reviewers can test every class immediately. |
+| **9-Class Probability Breakdown** | Full probability distribution across all 9 tissue classes displayed as an interactive bar chart in the results dashboard. |
+| **Interactive Sample Gallery** | Pre-loaded histopathology slides for instant demo — no upload needed. Reviewers can test immediately. |
 | **Medical Disclaimer System** | First-visit modal with persistent acknowledgement, plus a permanent footer warning banner ensuring responsible use. |
 | **Decoupled Architecture** | Async FastAPI backend (Docker-optimized) + premium Next.js 16 dark UI — fully decoupled for independent scaling. |
 | **Production Security** | Rate limiting via `slowapi`, CORS configuration, file size validation, request timeouts, and environment-variable-based secrets management. |
@@ -80,16 +83,16 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                           X-PATHOLOGY PIPELINE                              │
+│                           X-PATHOLOGY V3 PIPELINE                            │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │   ┌──────────────┐     ┌──────────────────┐     ┌──────────────────────────┐  │
 │   │   Next.js    │     │    FastAPI       │     │    Model Inference       │  │
-│   │   Frontend   │────▶│    Backend       │────▶│    (MobileNetV2)        │  │
+│   │   Frontend   │────▶│    Backend       │────▶│    (EfficientNetB1)     │  │
 │   │              │     │                  │     │                          │  │
-│   │  • Upload    │     │  • Image decode  │     │  • 224×224 preprocessing │  │
-│   │  • Sample    │     │  • Validation    │     │  • 5-class softmax       │  │
-│   │    Gallery   │     │  • Rate limiting │     │  • Confidence scoring    │  │
+│   │  • Upload    │     │  • Image decode  │     │  • 240×240 preprocessing │  │
+│   │  • Sample    │     │  • Validation    │     │  • 9-class logits        │  │
+│   │    Gallery   │     │  • Rate limiting │     │  • Temperature scaling   │  │
 │   └──────────────┘     └────────┬─────────┘     └─────────┬────────────────┘  │
 │                                │                          │                   │
 │                                │                          ▼                   │
@@ -97,7 +100,7 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 │                                │                │   Grad-CAM Engine    │      │
 │                                │                │                      │      │
 │                                │                │  • GradientTape      │      │
-│                                │                │  • Heatmap gen       │      │
+│                                │                │  • block7a_project_bn│      │
 │                                │                │  • OpenCV overlay    │      │
 │                                │                └──────────┬───────────┘      │
 │                                │                           │                  │
@@ -114,14 +117,16 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 │   │  Dashboard   │                                                            │
 │   │              │     Response payload:                                       │
 │   │  • Original  │     ┌─────────────────────────────────────┐               │
-│   │    slide     │     │ • prediction      (class label)     │               │
-│   │  • Grad-CAM  │     │ • severity        (Malignant/Benign)│               │
-│   │    overlay   │     │ • confidence      (0-100%)          │               │
-│   │  • Clinical  │     │ • gradcam_base64  (heatmap image)   │               │
-│   │    report    │     │ • full_report     (LLM text)        │               │
-│   │  • Patient   │     └─────────────────────────────────────┘               │
-│   │    summary   │                                                            │
-│   └─────────────┘                                                            │
+│   │    slide     │     │ • prediction       (class code)     │               │
+│   │  • Grad-CAM  │     │ • prediction_display (full name)    │               │
+│   │    overlay   │     │ • severity         (Malignant/Benign)│              │
+│   │  • Prob bars │     │ • confidence       (calibrated %)   │               │
+│   │  • Clinical  │     │ • temperature_applied (T value)     │               │
+│   │    report    │     │ • probability_breakdown (9-class)   │               │
+│   │  • Patient   │     │ • gradcam_base64   (heatmap image)  │               │
+│   │    summary   │     │ • full_report      (LLM text)       │               │
+│   └─────────────┘     │ • processing_time_s (seconds)       │               │
+│                        └─────────────────────────────────────┘               │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -130,25 +135,31 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 
 | Step | Component | Description |
 |:----:|-----------|-------------|
-| **01** | **Upload H&E Slide** | User uploads a histopathology tissue section image (JPEG/PNG) via drag-and-drop, file picker, or by selecting from the pre-loaded sample gallery. |
-| **02** | **MobileNetV2 CNN Inference** | The image is resized to 224×224, preprocessed, and passed through the fine-tuned MobileNetV2 model. A 5-class softmax layer produces calibrated probability scores. |
-| **03** | **Grad-CAM XAI Heatmap** | `tf.GradientTape` computes gradients against the predicted class through the final convolutional block. The resulting heatmap is resized, colorized (JET), and superimposed on the original slide at 60/40 opacity. |
+| **01** | **Upload H&E Patch** | User uploads a colorectal histopathology tissue patch (JPEG/PNG/TIFF) via drag-and-drop, file picker, or by selecting from the pre-loaded sample gallery. |
+| **02** | **EfficientNetB1 CNN Inference** | The image is resized to 240×240, and passed through the fine-tuned EfficientNetB1 Colon Specialist. Temperature-scaled softmax produces calibrated probability scores across 9 tissue types. |
+| **03** | **Grad-CAM XAI Heatmap** | `tf.GradientTape` computes gradients against the predicted class through the final convolutional block (`block7a_project_bn`). The resulting heatmap is resized, colorized (JET), and superimposed on the original slide at 60/40 opacity. |
 | **04** | **Gemini LLM Analysis** | Both the original slide *and* the Grad-CAM overlay are sent to Google's Gemini 2.5 Flash multimodal model with a structured clinical prompt. The LLM visually verifies the heatmap focus areas and generates a structured dual-persona report. |
-| **05** | **Dual-Persona Report** | The frontend renders: the original input, the explainability overlay, a **Clinical Pathology Report** (dense, technical — for oncologists), and a **Patient-Facing Summary** (compassionate, plain-English — for patients). |
+| **05** | **Dual-Persona Report** | The frontend renders: the original input, the explainability overlay, a 9-class probability breakdown, a **Clinical Pathology Report** (dense, technical — for oncologists), and a **Patient-Facing Summary** (compassionate, plain-English — for patients). |
 
 ---
 
 ## 🎯 Supported Classifications
 
-The CNN model classifies H&E-stained histopathology slides into **5 tissue categories** across two organ systems:
+The EfficientNetB1 Colon Specialist classifies H&E-stained colorectal histopathology patches into **9 tissue categories**:
 
-| # | Class | Organ | Type | Description |
-|:-:|-------|:-----:|:----:|-------------|
-| 1 | **Colon Adenocarcinoma** | Colon | 🔴 Malignant | Glandular epithelial cancer of the colon |
-| 2 | **Colon Benign Tissue** | Colon | 🟢 Benign | Normal/non-cancerous colon tissue |
-| 3 | **Lung Adenocarcinoma** | Lung | 🔴 Malignant | Glandular epithelial cancer of the lung |
-| 4 | **Lung Benign Tissue** | Lung | 🟢 Benign | Normal/non-cancerous lung tissue |
-| 5 | **Lung Squamous Cell Carcinoma** | Lung | 🔴 Malignant | Squamous epithelial cancer of the lung |
+| # | Code | Full Name | Type | Description |
+|:-:|:----:|-----------|:----:|-------------|
+| 1 | **ADI** | Adipose Tissue | 🟢 Benign | Fat tissue surrounding the colon |
+| 2 | **BACK** | Background | 🟢 Benign | Non-tissue background regions |
+| 3 | **DEB** | Debris / Necrosis | 🟢 Benign | Cellular debris and necrotic tissue |
+| 4 | **LYM** | Lymphocytes | 🟢 Benign | Immune cell aggregates and infiltrates |
+| 5 | **MUC** | Mucus | 🟢 Benign | Mucinous secretions and pools |
+| 6 | **MUS** | Smooth Muscle | 🟢 Benign | Muscularis propria / muscularis mucosae |
+| 7 | **NORM** | Normal Colon Mucosa | 🟢 Benign | Healthy epithelial glandular tissue |
+| 8 | **STR** | Cancer-Associated Stroma | 🟢 Benign | Desmoplastic stromal reaction tissue |
+| 9 | **TUM** | Colorectal Adenocarcinoma (Tumour) | 🔴 Malignant | Tumour epithelium — neoplastic |
+
+> **Note on MUS/STR:** Smooth muscle and cancer-associated stroma are histologically similar under H&E at patch level — this is a known hard pair in colorectal CPath literature. Crucially, both are non-neoplastic, so MUS↔STR confusion carries no clinical consequence for the primary cancer/non-cancer determination.
 
 ---
 
@@ -167,10 +178,10 @@ The CNN model classifies H&E-stained histopathology slides into **5 tissue categ
 | Technology | Role |
 |------------|------|
 | **Python** / **FastAPI** / **Uvicorn** | High-performance async API server with automatic OpenAPI docs |
-| **TensorFlow** / **Keras** | Deep learning framework powering the MobileNetV2 fine-tuned model |
+| **TensorFlow** / **Keras** | Deep learning framework powering the EfficientNetB1 Colon Specialist model |
 | **OpenCV** (Headless) | Image preprocessing, Grad-CAM heatmap colorization, and overlay compositing |
 | **Google Generative AI SDK** | Gemini 2.5 Flash multimodal LLM for clinical report generation |
-| **Hugging Face Hub** | Cloud-hosted model registry for versioned CNN weight management |
+| **Hugging Face Hub** | Cloud-hosted model registry for versioned CNN weight and calibration asset management |
 | **SlowAPI** | Rate limiting middleware (5 requests/minute per client) |
 | **python-dotenv** | Secure environment variable management |
 
@@ -212,10 +223,7 @@ X-Pathology/
         ├── public/
         │   └── sample/                 # Pre-loaded sample histopathology slides
         │       ├── colon_aca_sample.jpg
-        │       ├── colon_n_sample.jpg
-        │       ├── lung_aca_sample.jpeg
-        │       ├── lung_n_sample.jpeg
-        │       └── lung_scc_samlpe.jpeg
+        │       └── colon_n_sample.jpg
         ├── package.json
         ├── tsconfig.json
         ├── next.config.ts
@@ -269,6 +277,9 @@ GEMINI_API_KEY=your_google_gemini_api_key_here
 
 # Optional
 HF_TOKEN=                       # Required only for private HF repos
+HF_REPO_ID=rarfileexe/Xpathology-Colon-Specialist
+HF_MODEL_FILE=xpathology_colon_specialist_b1.keras
+TEMPERATURE=0.5576              # Fallback if temperature_value.npy not found
 ALLOWED_ORIGINS=*               # Comma-separated allowed CORS origins
 HOST=0.0.0.0
 PORT=8000
@@ -309,9 +320,12 @@ npm run dev
 |----------|:--------:|---------|-------------|
 | `GEMINI_API_KEY` | ✅ | — | Google Gemini API key for LLM report generation |
 | `HF_TOKEN` | ❌ | — | Hugging Face access token (only for private model repos) |
+| `HF_REPO_ID` | ❌ | `rarfileexe/Xpathology-Colon-Specialist` | Hugging Face model repository ID |
+| `HF_MODEL_FILE` | ❌ | `xpathology_colon_specialist_b1.keras` | Model weights filename in HF repo |
+| `TEMPERATURE` | ❌ | `0.5576` | Calibration temperature (fallback if .npy not in repo) |
 | `ALLOWED_ORIGINS` | ❌ | `*` | Comma-separated CORS allowed origins |
 | `HOST` | ❌ | `0.0.0.0` | Server bind host |
-| `PORT` | ❌ | `8000` | Server bind port |
+| `PORT` | ❌ | `7860` | Server bind port |
 
 ### Frontend
 
@@ -367,7 +381,8 @@ docker run -p 7860:7860 --env-file .env xpathology-backend
 | **Rate Limiting** | `slowapi` middleware limits API requests to **5/minute per client IP**, protecting against DoS attacks and Gemini API quota exhaustion. |
 | **Thread Pooling** | Heavy TensorFlow inference and synchronous OpenCV operations are routed through `fastapi.concurrency.run_in_threadpool` to prevent async event-loop blocking. |
 | **File Size Validation** | Uploaded files are capped at **10 MB** with server-side validation before processing. |
-| **Request Timeouts** | Frontend enforces a **35-second** `AbortController` timeout on API calls. |
+| **MIME Type Validation** | Only JPEG, PNG, and TIFF file types are accepted; all others are rejected with a 415 status. |
+| **Request Timeouts** | Frontend enforces a **60-second** `AbortController` timeout on API calls. |
 | **Secret Management** | All API keys are loaded from environment variables via `python-dotenv` — never hardcoded. The server refuses to start if `GEMINI_API_KEY` is missing. |
 | **CORS Configuration** | Configurable allowed origins via `ALLOWED_ORIGINS` environment variable. |
 | **Medical Disclaimer** | First-visit modal with `localStorage` persistence + persistent footer warning banner on every page. |
@@ -378,23 +393,28 @@ docker run -p 7860:7860 --env-file .env xpathology-backend
 
 | Property | Value |
 |----------|-------|
-| **Architecture** | MobileNetV2 (fine-tuned) |
-| **Input Size** | 224 × 224 × 3 (RGB) |
-| **Output** | 5-class softmax |
-| **Model Size** | ~8.6 MB |
-| **Accuracy** | ~98% on validation set |
-| **Preprocessing** | `keras.applications.mobilenet_v2.preprocess_input` |
-| **Grad-CAM Target** | `mobilenetv2_1.00_224` (final convolutional block) |
-| **Hosted On** | [🤗 Hugging Face Hub](https://huggingface.co/rarfileexe/XPathology-CNN_2.0_advance) |
-| **File** | `xpathology_v2_5class_finetuned.keras` |
+| **Architecture** | EfficientNetB1 (fine-tuned) — Colon Specialist |
+| **Input Size** | 240 × 240 × 3 (RGB) |
+| **Output** | 9-class softmax (temperature-calibrated) |
+| **Calibration** | Post-training temperature scaling, T = 0.5576 |
+| **Internal Accuracy** | 99.1% (20% split of NCT-CRC-HE-100K) |
+| **External Holdout** | 92.7% (CRC-VAL-HE-7K — independent dataset) |
+| **TUM F1 Score** | 0.9558 on external holdout |
+| **Training Data** | [NCT-CRC-HE-100K](https://www.kaggle.com/datasets/imrankhan77/nct-crc-he-100k) |
+| **Validation Data** | [CRC-VAL-HE-7K](https://www.kaggle.com/datasets/imrankhan77/crc-val-he-7k) |
+| **Preprocessing** | No manual normalization — EfficientNetB1 handles internal normalization |
+| **Grad-CAM Target** | `block7a_project_bn` (final convolutional block) |
+| **Training Hardware** | Kaggle T4 × 2 (MirroredStrategy), mixed precision float16 |
+| **Hosted On** | [🤗 Hugging Face Hub](https://huggingface.co/rarfileexe/Xpathology-Colon-Specialist) |
+| **File** | `xpathology_colon_specialist_b1.keras` |
 
-The model is automatically downloaded from Hugging Face Hub at server startup. No manual download is required.
+The model is automatically downloaded from Hugging Face Hub at server startup. No manual download is required. Temperature calibration values are loaded from `temperature_value.npy` in the same repository.
 
 ---
 
 ## 📈 Architecture Evolution
 
-X-Pathology underwent a significant architectural evolution to meet production-grade standards:
+X-Pathology underwent a significant architectural evolution across three major versions:
 
 ### Version 1.0 — VGG16 Baseline *(Deprecated)*
 
@@ -402,14 +422,26 @@ X-Pathology underwent a significant architectural evolution to meet production-g
 - **Task:** Binary classification (Colon Adenocarcinoma vs. Normal)
 - **Issue:** The massive parameter count acting on a simple binary sigmoid output led to mathematical saturation — producing "100% confidence" predictions even on out-of-distribution data. In clinical settings, *nuance is critical*.
 
-### Version 2.0 — MobileNetV2 *(Current)*
+### Version 2.0 — MobileNetV2 *(Superseded)*
 
 - **Architecture:** MobileNetV2 (8.6 MB — a **17× size reduction**)
 - **Task:** 5-class multi-organ classification (Colon + Lung)
+- **Strengths:**
+  - ✅ Cancer detection accurate
+  - ✅ 17× smaller than VGG16
+  - ✅ Eliminated binary overconfidence
+- **Critical Issue:** Although cancer detection was accurate, the model sometimes produced **organ-mismatched reports** — classifying colon tissue with a lung report and vice versa. This cross-organ confusion made the multi-organ approach unreliable for clinical-grade screening.
+
+### Version 3.0 — EfficientNetB1 Colon Specialist *(Current)*
+
+- **Architecture:** EfficientNetB1 (single-organ specialist)
+- **Task:** 9-class colorectal tissue classification
 - **Key Improvements:**
-  - ✅ **Precision Calibration** — 5-class softmax eliminates binary saturation, forcing the model to learn nuanced morphological features.
-  - ✅ **Radical Efficiency** — 17× smaller model enables near-instantaneous inference and seamless cloud deployment.
-  - ✅ **Enhanced XAI** — MobileNetV2's streamlined convolutional blocks produce tighter, more precise Grad-CAM heatmaps.
+  - ✅ **Single-Organ Focus** — Eliminated cross-organ confusion by focusing exclusively on colorectal tissue
+  - ✅ **9-Class Granularity** — Fine-grained tissue classification far beyond simple malignant/benign
+  - ✅ **Temperature Calibration** — Post-training temperature scaling (T=0.5576) for statistically calibrated confidence values
+  - ✅ **External Validation** — Independently validated on CRC-VAL-HE-7K (92.7% accuracy, TUM F1=0.9558)
+  - ✅ **Two-Phase Training** — Warm-up with frozen backbone + fine-tuning with unfrozen top 32% layers
 
 ---
 
@@ -465,6 +497,8 @@ X-Pathology underwent a significant architectural evolution to meet production-g
 
 This project is provided as-is for educational and portfolio purposes. All rights reserved by [Syed Muhammad Hassan](https://github.com/Muhammad-Hassan12).
 
+The model is released under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). The training datasets (NCT-CRC-HE-100K and CRC-VAL-HE-7K) are released under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) by Kather et al.
+
 ---
 
 <div align="center">
@@ -473,6 +507,6 @@ This project is provided as-is for educational and portfolio purposes. All right
   </sub>
   <br />
   <sub>
-    🔬 X-Pathology v2.0 · MobileNetV2 · Grad-CAM XAI · Gemini 2.5 Flash
+    🔬 X-Pathology v3.0 · EfficientNetB1 Colon Specialist · 9-Class · Temperature Calibrated · Grad-CAM XAI · Gemini 2.5 Flash
   </sub>
 </div>

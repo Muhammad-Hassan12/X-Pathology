@@ -156,7 +156,7 @@ export default function Footer() {
               letterSpacing: "0.08em",
             }}
           >
-            v2.0 · MobileNetV2
+            v3.0 · EfficientNetB1
           </span>
         </div>
       </div>

@@ -22,17 +22,19 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "X-Pathology — AI-Assisted Oncology Screening",
+  title: "X-Pathology — AI-Assisted Colorectal Oncology Screening",
   description:
-    "Upload H&E stained histopathology slides for 5-class colon & lung cancer classification. Powered by MobileNetV2, Grad-CAM XAI, and Gemini dual-persona reporting. Built by AgenticEra Systems.",
+    "Upload H&E stained colorectal histopathology patches for 9-class tissue classification. Powered by EfficientNetB1 with temperature-calibrated confidence, Grad-CAM XAI, and Gemini dual-persona clinical reporting. Built by AgenticEra Systems.",
   keywords: [
     "histopathology",
     "AI pathology",
     "cancer detection",
     "Grad-CAM",
-    "MobileNetV2",
+    "EfficientNetB1",
+    "colorectal cancer",
     "colon cancer",
-    "lung cancer",
+    "temperature calibration",
+    "computational pathology",
     "AgenticEra Systems",
   ],
 };

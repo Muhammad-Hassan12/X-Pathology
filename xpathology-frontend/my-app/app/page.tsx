@@ -2,16 +2,35 @@
 
 import { useState, useCallback, useRef } from "react";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Types
 interface AnalysisResult {
   prediction: string;
+  prediction_display: string;
   severity: "Malignant" | "Benign";
   confidence: number;
+  temperature_applied: number;
+  probability_breakdown: Record<string, number>;
   gradcam_image_base64: string;
   full_report: string;
+  processing_time_s: number;
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// Constants
+const CLASS_DISPLAY: Record<string, string> = {
+  ADI: "Adipose Tissue",
+  BACK: "Background",
+  DEB: "Debris / Necrosis",
+  LYM: "Lymphocytes",
+  MUC: "Mucus",
+  MUS: "Smooth Muscle",
+  NORM: "Normal Colon Mucosa",
+  STR: "Cancer-Associated Stroma",
+  TUM: "Colorectal Adenocarcinoma",
+};
+
+const MALIGNANT_CLASSES = new Set(["TUM"]);
+
+// Helpers
 function parseReport(report: string) {
   const clinicalMatch = report.match(
     /\*\*Section 1: Clinical Pathology Report\*\*\s*([\s\S]*?)(?=\*\*Section 2:|$)/
@@ -25,7 +44,11 @@ function parseReport(report: string) {
   };
 }
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+function getSeverityColor(code: string): string {
+  return MALIGNANT_CLASSES.has(code) ? "#ff5050" : "var(--accent)";
+}
+
+// Sub-components
 function ScanlineOverlay() {
   return (
     <div
@@ -107,7 +130,7 @@ function UploadZone({
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png"
+        accept="image/jpeg,image/png,image/tiff"
         style={{ display: "none" }}
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -156,7 +179,7 @@ function UploadZone({
                 color: "var(--muted)",
               }}
             >
-              .JPG or .PNG · histopathology section
+              .JPG, .PNG or .TIFF · colorectal histopathology patch
             </p>
           </div>
         </>
@@ -247,7 +270,7 @@ function Spinner() {
             color: "var(--muted)",
           }}
         >
-          CNN inference · Grad-CAM · Gemini report generation
+          EfficientNetB1 inference · Grad-CAM · Gemini report generation
         </p>
       </div>
     </div>
@@ -256,10 +279,12 @@ function Spinner() {
 
 function ConfidenceBadge({
   prediction,
+  predictionDisplay,
   severity,
   confidence,
 }: {
   prediction: string;
+  predictionDisplay: string;
   severity: "Malignant" | "Benign";
   confidence: number;
 }) {
@@ -296,8 +321,222 @@ function ConfidenceBadge({
           letterSpacing: "0.08em",
         }}
       >
-        {prediction.toUpperCase()} · {confidence.toFixed(1)}% confidence
+        {prediction} · {confidence.toFixed(1)}%
       </span>
+      <span
+        style={{
+          fontFamily: "var(--font-body)",
+          fontSize: "0.72rem",
+          color: "var(--fg-muted)",
+        }}
+      >
+        {predictionDisplay}
+      </span>
+    </div>
+  );
+}
+
+function ProbabilityBreakdown({
+  breakdown,
+  predicted,
+}: {
+  breakdown: Record<string, number>;
+  predicted: string;
+}) {
+  const sorted = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
+  const maxVal = Math.max(...Object.values(breakdown), 1);
+
+  return (
+    <div
+      style={{
+        background: "rgba(255,255,255,0.025)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: 12,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          padding: "14px 20px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <span
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "0.95rem",
+            color: "var(--fg)",
+            letterSpacing: "0.02em",
+          }}
+        >
+          Probability Breakdown
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.65rem",
+            color: "#a78bfa",
+            border: "1px solid rgba(167,139,250,0.3)",
+            borderRadius: 4,
+            padding: "2px 8px",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+          }}
+        >
+          9-Class
+        </span>
+      </div>
+      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
+        {sorted.map(([cls, pct]) => {
+          const isPredicted = cls === predicted;
+          const isMalignant = MALIGNANT_CLASSES.has(cls);
+          const barColor = isPredicted
+            ? isMalignant
+              ? "#ff5050"
+              : "var(--accent)"
+            : "rgba(255,255,255,0.15)";
+
+          return (
+            <div key={cls} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.68rem",
+                  color: isPredicted ? "var(--fg)" : "var(--muted)",
+                  width: 42,
+                  flexShrink: 0,
+                  fontWeight: isPredicted ? 600 : 400,
+                }}
+              >
+                {cls}
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  height: 8,
+                  borderRadius: 4,
+                  background: "rgba(255,255,255,0.04)",
+                  overflow: "hidden",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${(pct / maxVal) * 100}%`,
+                    height: "100%",
+                    borderRadius: 4,
+                    background: barColor,
+                    transition: "width 0.6s ease",
+                    minWidth: pct > 0 ? 2 : 0,
+                    boxShadow: isPredicted ? `0 0 8px ${barColor}` : "none",
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: "var(--font-mono)",
+                  fontSize: "0.65rem",
+                  color: isPredicted ? "var(--fg)" : "var(--muted)",
+                  width: 48,
+                  textAlign: "right",
+                  flexShrink: 0,
+                  fontWeight: isPredicted ? 600 : 400,
+                }}
+              >
+                {pct.toFixed(1)}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ProcessingStats({
+  time,
+  temperature,
+}: {
+  time: number;
+  temperature: number;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: 10,
+        flexWrap: "wrap",
+      }}
+    >
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "4px 10px",
+          borderRadius: 6,
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <span style={{ fontSize: "0.72rem" }}>⏱</span>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.65rem",
+            color: "var(--muted)",
+          }}
+        >
+          {time.toFixed(1)}s
+        </span>
+      </div>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "4px 10px",
+          borderRadius: 6,
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <span style={{ fontSize: "0.72rem" }}>🌡</span>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.65rem",
+            color: "var(--muted)",
+          }}
+        >
+          T={temperature.toFixed(4)}
+        </span>
+      </div>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "4px 10px",
+          borderRadius: 6,
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <span style={{ fontSize: "0.72rem" }}>🧠</span>
+        <span
+          style={{
+            fontFamily: "var(--font-mono)",
+            fontSize: "0.65rem",
+            color: "var(--muted)",
+          }}
+        >
+          EfficientNetB1
+        </span>
+      </div>
     </div>
   );
 }
@@ -379,9 +618,6 @@ function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: Fi
   const SAMPLES = [
     { name: "Colon Malignant", path: "/sample/colon_aca_sample.jpg" },
     { name: "Colon Benign", path: "/sample/colon_n_sample.jpg" },
-    { name: "Lung Malignant", path: "/sample/lung_aca_sample.jpeg" },
-    { name: "Lung Benign", path: "/sample/lung_n_sample.jpeg" },
-    { name: "Lung Squamous", path: "/sample/lung_scc_samlpe.jpeg" }
   ];
 
   const handleSelect = async (sample: typeof SAMPLES[0]) => {
@@ -509,7 +745,7 @@ export default function XPathologyPage() {
     formData.append("file", file);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 35000);
+    const timeoutId = setTimeout(() => controller.abort(), 60000);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://rarfileexe-xpathology-backend.hf.space"}/api/analyze`, {
@@ -534,7 +770,7 @@ export default function XPathologyPage() {
     } catch (err: unknown) {
       clearTimeout(timeoutId);
       if (err instanceof Error && err.name === "AbortError") {
-        setError("Request timed out. The server took too long to respond.");
+        setError("Request timed out. The server may be waking up — please try again in a moment.");
       } else {
         const msg =
           err instanceof Error ? err.message : "Unknown error occurred.";
@@ -577,7 +813,7 @@ export default function XPathologyPage() {
                 marginBottom: 14,
               }}
             >
-              Deep Learning · XAI · Dual-Persona Reporting
+              9-Class · Temperature Calibrated · XAI · Dual-Persona Reporting
             </p>
             <h1
               style={{
@@ -590,7 +826,7 @@ export default function XPathologyPage() {
                 marginBottom: 18,
               }}
             >
-              Colon & Lung Cancer Detection
+              Colorectal Cancer Screening
               <br />
               <span
                 style={{
@@ -606,15 +842,16 @@ export default function XPathologyPage() {
             </h1>
             <p
               style={{
-                maxWidth: 560,
+                maxWidth: 600,
                 margin: "0 auto",
                 fontSize: "0.88rem",
                 color: "var(--fg-muted)",
                 lineHeight: 1.7,
               }}
             >
-              Upload an H&amp;E stained slide. The mobilenetv2-based CNN classifies
-              the tissue, Grad-CAM visualizes the decision, and Gemini writes
+              Upload an H&amp;E stained colorectal tissue patch. The EfficientNetB1
+              Colon Specialist classifies 9 tissue types with temperature-calibrated
+              confidence, Grad-CAM visualizes the decision, and Gemini writes
               both a clinical report and a plain-English patient summary.
             </p>
           </section>
@@ -640,7 +877,7 @@ export default function XPathologyPage() {
                 marginBottom: 16,
               }}
             >
-              Step 01 — Upload Slide
+              Step 01 — Upload Colorectal Slide
             </p>
 
             <UploadZone
@@ -651,8 +888,6 @@ export default function XPathologyPage() {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             />
-
-            <SampleGallery onSampleSelect={handleFile} disabled={loading} />
 
             {file && (
               <div
@@ -744,7 +979,7 @@ export default function XPathologyPage() {
                   justifyContent: "space-between",
                   flexWrap: "wrap",
                   gap: 12,
-                  marginBottom: "1.5rem",
+                  marginBottom: "1rem",
                 }}
               >
                 <p
@@ -760,8 +995,17 @@ export default function XPathologyPage() {
                 </p>
                 <ConfidenceBadge
                   prediction={result.prediction}
+                  predictionDisplay={result.prediction_display}
                   severity={result.severity}
                   confidence={result.confidence}
+                />
+              </div>
+
+              {/* Processing stats */}
+              <div style={{ marginBottom: "1.5rem" }}>
+                <ProcessingStats
+                  time={result.processing_time_s}
+                  temperature={result.temperature_applied}
                 />
               </div>
 
@@ -774,7 +1018,7 @@ export default function XPathologyPage() {
                   alignItems: "start",
                 }}
               >
-                {/* Left: Images */}
+                {/* Left: Images + Probability */}
                 <div
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
@@ -889,6 +1133,12 @@ export default function XPathologyPage() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Probability Breakdown */}
+                  <ProbabilityBreakdown
+                    breakdown={result.probability_breakdown}
+                    predicted={result.prediction}
+                  />
                 </div>
 
                 {/* Right: Reports */}
