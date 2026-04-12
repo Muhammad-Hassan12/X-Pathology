@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <em>A portfolio project for research & educational purposes only.</em>
+  <em>This project is for research & educational purposes only.</em>
 </p>
 
 </div>
@@ -56,6 +56,8 @@
 **X-Pathology** is an end-to-end **Explainable AI (XAI)** pipeline designed to bridge the gap between deep learning diagnostics and clinical interpretability. Built to analyze **H&E-stained colorectal histopathology patches**, this system provides rapid, transparent, and highly calibrated 9-class tissue classification for colorectal tissue analysis.
 
 Instead of relying on a "black box" prediction, X-Pathology employs a **multimodal architecture** that visually explains its reasoning through Grad-CAM heatmaps and generates compassionate, human-readable reports via Google's Gemini LLM — producing **dual-persona output** for both oncologists and patients.
+
+Here is the Repo link of the training process of the model, used in this project: https://github.com/Muhammad-Hassan12/Cancer-Prediction-Model-2.0
 
 > **Why X-Pathology?**  
 > The "X" stands for **Explainability** — the core philosophy that every AI prediction in a medical context must be transparent, interpretable, and verifiable by a human expert.
@@ -493,9 +495,21 @@ X-Pathology underwent a significant architectural evolution across three major v
 
 ---
 
+## 🤝 Contributing
+
+Contributions are welcome! If you'd like to improve **X-Pathology**:
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
+3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
+4. **Push** to the branch (`git push origin feature/amazing-feature`)
+5. **Open** a Pull Request
+
+---
+
 ## 📄 License
 
-This project is provided as-is for educational and portfolio purposes. All rights reserved by [Syed Muhammad Hassan](https://github.com/Muhammad-Hassan12).
+This project is Open-Source and available under [Apache-2.0 License](LICENSE)
 
 The model is released under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). The training datasets (NCT-CRC-HE-100K and CRC-VAL-HE-7K) are released under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) by Kather et al.
 
