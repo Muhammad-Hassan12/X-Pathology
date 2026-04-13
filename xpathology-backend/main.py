@@ -278,20 +278,37 @@ Dense technical analysis. Describe morphological features visible in the H&E ima
 **Section 2: Patient-Facing Summary**
 Compassionate plain-English summary. Explain what tissue type was found, what the colour heatmap means simply, and clearly state this is an AI research tool that must be reviewed by a qualified pathologist before any medical decision."""
 
-    log.info("Requesting Gemini report...")
-    response = gemini_client.models.generate_content(
-        model    = "gemini-2.5-flash",
-        contents = [
-            prompt,
-            types.Part.from_bytes(data=pil_to_bytes(original_pil), mime_type="image/jpeg"),
-            types.Part.from_bytes(data=pil_to_bytes(overlay_pil),  mime_type="image/jpeg"),
-        ],
-    )
-    log.info("Gemini report received.")
-
-    # Base64 overlay for frontend
+    # Base64 overlay for frontend (do this before Gemini so it's always available)
     _, buf  = cv2.imencode(".jpg", overlay_bgr, [cv2.IMWRITE_JPEG_QUALITY, 90])
     img_b64 = base64.b64encode(buf).decode("utf-8")
+
+    # Gemini report (graceful degradation — return CNN results even if Gemini fails)
+    report_text = ""
+    try:
+        log.info("Requesting Gemini report...")
+        response = gemini_client.models.generate_content(
+            model    = "gemini-2.5-flash",
+            contents = [
+                prompt,
+                types.Part.from_bytes(data=pil_to_bytes(original_pil), mime_type="image/jpeg"),
+                types.Part.from_bytes(data=pil_to_bytes(overlay_pil),  mime_type="image/jpeg"),
+            ],
+        )
+        report_text = response.text
+        log.info("Gemini report received.")
+    except Exception as gemini_err:
+        log.warning(f"Gemini API failed (non-fatal): {gemini_err}")
+        report_text = (
+            "**Section 1: Clinical Pathology Report**\n\n"
+            "⚠ The AI report is temporarily unavailable due to high demand on the Gemini API. "
+            "The CNN classification and Grad-CAM heatmap above remain valid. "
+            "Please retry in a few moments to generate the full clinical narrative.\n\n"
+            "**Section 2: Patient-Facing Summary**\n\n"
+            "The AI tissue classification and visual heatmap have been generated successfully. "
+            "However, the detailed written report could not be produced right now due to temporary "
+            "server load. Please try again shortly. Remember — all AI results must be reviewed "
+            "by a qualified pathologist before any medical decision."
+        )
 
     elapsed = round(time.perf_counter() - t0, 2)
     log.info(f"Request done in {elapsed}s")
@@ -304,7 +321,7 @@ Compassionate plain-English summary. Explain what tissue type was found, what th
         "temperature_applied"   : round(TEMPERATURE, 4),
         "probability_breakdown" : prob_breakdown,
         "gradcam_image_base64"  : f"data:image/jpeg;base64,{img_b64}",
-        "full_report"           : response.text,
+        "full_report"           : report_text,
         "processing_time_s"     : elapsed,
     }
 

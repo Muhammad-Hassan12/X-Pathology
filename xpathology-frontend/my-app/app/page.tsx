@@ -616,8 +616,16 @@ function ReportCard({
 
 function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: File) => void, disabled: boolean }) {
   const SAMPLES = [
-    { name: "Colon Malignant", path: "/sample/colon_aca_sample.jpg" },
-    { name: "Colon Benign", path: "/sample/colon_n_sample.jpg" },
+    { code: "ADI",  name: "Adipose Tissue",       path: "/sample/Adipose Tissue.jpg",                          malignant: false },
+    { code: "BACK", name: "Background",            path: "/sample/Background.png",                              malignant: false },
+    { code: "DEB",  name: "Debris / Necrosis",     path: "/sample/Debris  Necrosis.png",                        malignant: false },
+    { code: "LYM",  name: "Lymphocytes",           path: "/sample/Lymphocytes.png",                             malignant: false },
+    { code: "MUC",  name: "Mucus",                 path: "/sample/Mucus.jfif",                                  malignant: false },
+    { code: "MUS",  name: "Smooth Muscle",         path: "/sample/Smooth Muscle.png",                           malignant: false },
+    { code: "NORM", name: "Normal Colon Mucosa",   path: "/sample/Normal Colon Mucosa.png",                     malignant: false },
+    { code: "STR",  name: "Stroma",                path: "/sample/Cancer-Associated Stroma.png",                malignant: false },
+    { code: "TUM",  name: "Tumour (Sample 1)",     path: "/sample/Colorectal Adenocarcinoma (Tumour).jpg",      malignant: true },
+    { code: "TUM",  name: "Tumour (Sample 2)",     path: "/sample/Colorectal Adenocarcinoma (Tumour)2.jpg",     malignant: true },
   ];
 
   const handleSelect = async (sample: typeof SAMPLES[0]) => {
@@ -633,7 +641,7 @@ function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: Fi
   };
 
   return (
-    <div style={{ marginTop: 24, textAlign: "center" }}>
+    <div style={{ marginTop: 24 }}>
       <p style={{
         fontFamily: "var(--font-mono)",
         fontSize: "0.68rem",
@@ -641,60 +649,93 @@ function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: Fi
         letterSpacing: "0.14em",
         textTransform: "uppercase",
         marginBottom: 12,
+        textAlign: "center",
       }}>
         Or try a sample slide:
       </p>
-      <div style={{
-        display: "flex",
-        gap: 12,
-        flexWrap: "wrap",
-        justifyContent: "center",
-      }}>
-        {SAMPLES.map((s, i) => (
-          <button
-            key={i}
-            onClick={() => handleSelect(s)}
-            disabled={disabled}
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 8,
-              padding: "6px 12px",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              cursor: disabled ? "not-allowed" : "pointer",
-              transition: "all 0.2s ease",
-              opacity: disabled ? 0.5 : 1,
-            }}
-            onMouseOver={(e) => {
-              if (!disabled) {
-                e.currentTarget.style.borderColor = "var(--accent)";
-                e.currentTarget.style.background = "rgba(0,210,150,0.08)";
-              }
-            }}
-            onMouseOut={(e) => {
-              if (!disabled) {
-                e.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
-                e.currentTarget.style.background = "rgba(255,255,255,0.03)";
-              }
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={s.path}
-              alt={s.name}
-              style={{ width: 28, height: 28, borderRadius: 4, objectFit: "cover" }}
-            />
-            <span style={{
-              fontFamily: "var(--font-mono)",
-              fontSize: "0.7rem",
-              color: "var(--fg-muted)"
-            }}>
-              {s.name}
-            </span>
-          </button>
-        ))}
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          overflowX: "auto",
+          paddingBottom: 8,
+          scrollbarWidth: "thin",
+          scrollbarColor: "rgba(0,210,150,0.2) transparent",
+        }}
+      >
+        {SAMPLES.map((s, i) => {
+          const borderColor = s.malignant ? "rgba(255,80,80,0.2)" : "rgba(255,255,255,0.08)";
+          const hoverBorder = s.malignant ? "rgba(255,80,80,0.5)" : "rgba(0,210,150,0.4)";
+          const hoverBg     = s.malignant ? "rgba(255,80,80,0.06)" : "rgba(0,210,150,0.06)";
+          return (
+            <button
+              key={i}
+              onClick={() => handleSelect(s)}
+              disabled={disabled}
+              style={{
+                background: "rgba(255,255,255,0.02)",
+                border: `1px solid ${borderColor}`,
+                borderRadius: 10,
+                padding: 8,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 6,
+                cursor: disabled ? "not-allowed" : "pointer",
+                transition: "all 0.2s ease",
+                opacity: disabled ? 0.5 : 1,
+                flexShrink: 0,
+                minWidth: 90,
+              }}
+              onMouseOver={(e) => {
+                if (!disabled) {
+                  e.currentTarget.style.borderColor = hoverBorder;
+                  e.currentTarget.style.background = hoverBg;
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }
+              }}
+              onMouseOut={(e) => {
+                if (!disabled) {
+                  e.currentTarget.style.borderColor = borderColor;
+                  e.currentTarget.style.background = "rgba(255,255,255,0.02)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={s.path}
+                alt={s.name}
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 6,
+                  objectFit: "cover",
+                  border: `1px solid ${s.malignant ? "rgba(255,80,80,0.15)" : "rgba(255,255,255,0.06)"}`,
+                }}
+              />
+              <span style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: "0.58rem",
+                fontWeight: 600,
+                color: s.malignant ? "#ff8080" : "var(--accent)",
+                letterSpacing: "0.08em",
+              }}>
+                {s.code}
+              </span>
+              <span style={{
+                fontFamily: "var(--font-body)",
+                fontSize: "0.6rem",
+                color: "var(--muted)",
+                maxWidth: 80,
+                textAlign: "center",
+                lineHeight: 1.2,
+              }}>
+                {s.name}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -888,6 +929,8 @@ export default function XPathologyPage() {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
             />
+
+            <SampleGallery onSampleSelect={handleFile} disabled={loading} />
 
             {file && (
               <div
