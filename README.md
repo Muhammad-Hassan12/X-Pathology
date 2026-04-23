@@ -352,7 +352,7 @@ Both models are hosted on the Hugging Face Hub and are dynamically downloaded an
 - **Hub Repo:** [rarfileexe/xpathology-brain-specialist](https://huggingface.co/rarfileexe/xpathology-brain-specialist)
 - **Architecture:** EfficientNetB0
 - **Calibration:** T = 0.7867
-- **Performance:** 96.25% Holdout Accuracy (Masoud Nickparvar Dataset).
+- **Performance:** 90.1% Holdout Accuracy (masoudnickparvar Testing split). Glioma F1 = 0.8440.
 
 ---
 
