@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import SpecialistSelector from "./components/SpecialistSelector";
 
 // Types
 interface AnalysisResult {
+  specialist?: string;
+  anatomical_note?: string;
   prediction: string;
   prediction_display: string;
-  severity: "Malignant" | "Benign";
+  severity: string;
   confidence: number;
   temperature_applied: number;
   probability_breakdown: Record<string, number>;
@@ -15,25 +18,11 @@ interface AnalysisResult {
   processing_time_s: number;
 }
 
-// Constants
-const CLASS_DISPLAY: Record<string, string> = {
-  ADI: "Adipose Tissue",
-  BACK: "Background",
-  DEB: "Debris / Necrosis",
-  LYM: "Lymphocytes",
-  MUC: "Mucus",
-  MUS: "Smooth Muscle",
-  NORM: "Normal Colon Mucosa",
-  STR: "Cancer-Associated Stroma",
-  TUM: "Colorectal Adenocarcinoma",
-};
-
-const MALIGNANT_CLASSES = new Set(["TUM"]);
-
 // Helpers
 function parseReport(report: string) {
+  // Match Section 1 with either "Clinical Pathology Report" or "Radiology Report"
   const clinicalMatch = report.match(
-    /\*\*Section 1: Clinical Pathology Report\*\*\s*([\s\S]*?)(?=\*\*Section 2:|$)/
+    /\*\*Section 1:.*?\*\*\s*([\s\S]*?)(?=\*\*Section 2:|$)/
   );
   const patientMatch = report.match(
     /\*\*Section 2: Patient-Facing Summary\*\*\s*([\s\S]*?)$/
@@ -44,8 +33,25 @@ function parseReport(report: string) {
   };
 }
 
-function getSeverityColor(code: string): string {
-  return MALIGNANT_CLASSES.has(code) ? "#ff5050" : "var(--accent)";
+function getSeverityColor(severity: string): string {
+  if (severity === "Malignant" || severity === "High Concern") return "#ff5050";
+  if (severity === "Moderate Concern") return "#fbbf24"; // amber
+  return "var(--accent)"; // green for Benign / No Tumor Detected
+}
+function getSeverityBgColor(severity: string): string {
+  if (severity === "Malignant" || severity === "High Concern") return "rgba(255,80,80,0.08)";
+  if (severity === "Moderate Concern") return "rgba(251,191,36,0.08)";
+  return "rgba(0,210,150,0.08)";
+}
+function getSeverityBorderColor(severity: string): string {
+  if (severity === "Malignant" || severity === "High Concern") return "rgba(255,80,80,0.4)";
+  if (severity === "Moderate Concern") return "rgba(251,191,36,0.4)";
+  return "rgba(0,210,150,0.4)";
+}
+function getSeverityTextColor(severity: string): string {
+  if (severity === "Malignant" || severity === "High Concern") return "#ff8080";
+  if (severity === "Moderate Concern") return "#fcd34d";
+  return "var(--accent)";
 }
 
 // Sub-components
@@ -84,6 +90,7 @@ function GridBackground() {
 }
 
 function UploadZone({
+  specialist,
   onFile,
   preview,
   isDragging,
@@ -91,6 +98,7 @@ function UploadZone({
   onDragLeave,
   onDrop,
 }: {
+  specialist: "colon" | "brain";
   onFile: (f: File) => void;
   preview: string | null;
   isDragging: boolean;
@@ -170,7 +178,7 @@ function UploadZone({
                 textTransform: "uppercase",
               }}
             >
-              Drop H&E Slide Here
+              {specialist === "colon" ? "Drop H&E Slide Here" : "Drop MRI Scan Here"}
             </p>
             <p
               style={{
@@ -179,7 +187,7 @@ function UploadZone({
                 color: "var(--muted)",
               }}
             >
-              .JPG, .PNG or .TIFF · colorectal histopathology patch
+              .JPG, .PNG or .TIFF · {specialist === "colon" ? "colorectal histopathology patch" : "axial T1-weighted MRI scan"}
             </p>
           </div>
         </>
@@ -209,7 +217,8 @@ function MicroscopeIcon() {
   );
 }
 
-function Spinner() {
+function Spinner({ specialist }: { specialist: string }) {
+  const isBrain = specialist === "brain";
   return (
     <div
       style={{
@@ -261,7 +270,7 @@ function Spinner() {
             textTransform: "uppercase",
           }}
         >
-          Analyzing cellular structures...
+          {isBrain ? "Analyzing MRI scan..." : "Analyzing cellular structures..."}
         </p>
         <p
           style={{
@@ -270,7 +279,7 @@ function Spinner() {
             color: "var(--muted)",
           }}
         >
-          EfficientNetB1 inference · Grad-CAM · Gemini report generation
+          {isBrain ? "EfficientNetB0" : "EfficientNetB1"} inference · Grad-CAM · Gemini report generation
         </p>
       </div>
     </div>
@@ -285,10 +294,9 @@ function ConfidenceBadge({
 }: {
   prediction: string;
   predictionDisplay: string;
-  severity: "Malignant" | "Benign";
+  severity: string;
   confidence: number;
 }) {
-  const isMalignant = severity === "Malignant";
   return (
     <div
       style={{
@@ -297,10 +305,8 @@ function ConfidenceBadge({
         gap: 10,
         padding: "6px 14px",
         borderRadius: 6,
-        border: `1px solid ${isMalignant ? "rgba(255,80,80,0.4)" : "rgba(0,210,150,0.4)"}`,
-        background: isMalignant
-          ? "rgba(255,80,80,0.08)"
-          : "rgba(0,210,150,0.08)",
+        border: `1px solid ${getSeverityBorderColor(severity)}`,
+        background: getSeverityBgColor(severity),
       }}
     >
       <span
@@ -308,8 +314,8 @@ function ConfidenceBadge({
           width: 8,
           height: 8,
           borderRadius: "50%",
-          background: isMalignant ? "#ff5050" : "var(--accent)",
-          boxShadow: `0 0 8px ${isMalignant ? "#ff5050" : "var(--accent)"}`,
+          background: getSeverityColor(severity),
+          boxShadow: `0 0 8px ${getSeverityColor(severity)}`,
           display: "inline-block",
         }}
       />
@@ -317,7 +323,7 @@ function ConfidenceBadge({
         style={{
           fontFamily: "var(--font-mono)",
           fontSize: "0.85rem",
-          color: isMalignant ? "#ff8080" : "var(--accent)",
+          color: getSeverityTextColor(severity),
           letterSpacing: "0.08em",
         }}
       >
@@ -339,12 +345,17 @@ function ConfidenceBadge({
 function ProbabilityBreakdown({
   breakdown,
   predicted,
+  severity,
+  specialist,
 }: {
   breakdown: Record<string, number>;
   predicted: string;
+  severity: string;
+  specialist: string;
 }) {
   const sorted = Object.entries(breakdown).sort((a, b) => b[1] - a[1]);
   const maxVal = Math.max(...Object.values(breakdown), 1);
+  const classCount = Object.keys(breakdown).length;
 
   return (
     <div
@@ -386,17 +397,14 @@ function ProbabilityBreakdown({
             textTransform: "uppercase",
           }}
         >
-          9-Class
+          {classCount}-Class
         </span>
       </div>
       <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 8 }}>
         {sorted.map(([cls, pct]) => {
           const isPredicted = cls === predicted;
-          const isMalignant = MALIGNANT_CLASSES.has(cls);
           const barColor = isPredicted
-            ? isMalignant
-              ? "#ff5050"
-              : "var(--accent)"
+            ? getSeverityColor(severity)
             : "rgba(255,255,255,0.15)";
 
           return (
@@ -459,9 +467,11 @@ function ProbabilityBreakdown({
 function ProcessingStats({
   time,
   temperature,
+  specialist,
 }: {
   time: number;
   temperature: number;
+  specialist: string;
 }) {
   return (
     <div
@@ -534,7 +544,7 @@ function ProcessingStats({
             color: "var(--muted)",
           }}
         >
-          EfficientNetB1
+          {specialist === "colon" ? "EfficientNetB1" : "EfficientNetB0"}
         </span>
       </div>
     </div>
@@ -616,16 +626,16 @@ function ReportCard({
 
 function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: File) => void, disabled: boolean }) {
   const SAMPLES = [
-    { code: "ADI",  name: "Adipose Tissue",       path: "/sample/Adipose Tissue.jpg",                          malignant: false },
-    { code: "BACK", name: "Background",            path: "/sample/Background.png",                              malignant: false },
-    { code: "DEB",  name: "Debris / Necrosis",     path: "/sample/Debris  Necrosis.png",                        malignant: false },
-    { code: "LYM",  name: "Lymphocytes",           path: "/sample/Lymphocytes.png",                             malignant: false },
-    { code: "MUC",  name: "Mucus",                 path: "/sample/Mucus.jfif",                                  malignant: false },
-    { code: "MUS",  name: "Smooth Muscle",         path: "/sample/Smooth Muscle.png",                           malignant: false },
-    { code: "NORM", name: "Normal Colon Mucosa",   path: "/sample/Normal Colon Mucosa.png",                     malignant: false },
-    { code: "STR",  name: "Stroma",                path: "/sample/Cancer-Associated Stroma.png",                malignant: false },
-    { code: "TUM",  name: "Tumour (Sample 1)",     path: "/sample/Colorectal Adenocarcinoma (Tumour).jpg",      malignant: true },
-    { code: "TUM",  name: "Tumour (Sample 2)",     path: "/sample/Colorectal Adenocarcinoma (Tumour)2.jpg",     malignant: true },
+    { code: "ADI", name: "Adipose Tissue", path: "/sample/Adipose Tissue.jpg", malignant: false },
+    { code: "BACK", name: "Background", path: "/sample/Background.png", malignant: false },
+    { code: "DEB", name: "Debris / Necrosis", path: "/sample/Debris  Necrosis.png", malignant: false },
+    { code: "LYM", name: "Lymphocytes", path: "/sample/Lymphocytes.png", malignant: false },
+    { code: "MUC", name: "Mucus", path: "/sample/Mucus.jfif", malignant: false },
+    { code: "MUS", name: "Smooth Muscle", path: "/sample/Smooth Muscle.png", malignant: false },
+    { code: "NORM", name: "Normal Colon Mucosa", path: "/sample/Normal Colon Mucosa.png", malignant: false },
+    { code: "STR", name: "Stroma", path: "/sample/Cancer-Associated Stroma.png", malignant: false },
+    { code: "TUM", name: "Tumour (Sample 1)", path: "/sample/Colorectal Adenocarcinoma (Tumour).jpg", malignant: true },
+    { code: "TUM", name: "Tumour (Sample 2)", path: "/sample/Colorectal Adenocarcinoma (Tumour)2.jpg", malignant: true },
   ];
 
   const handleSelect = async (sample: typeof SAMPLES[0]) => {
@@ -666,7 +676,7 @@ function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: Fi
         {SAMPLES.map((s, i) => {
           const borderColor = s.malignant ? "rgba(255,80,80,0.2)" : "rgba(255,255,255,0.08)";
           const hoverBorder = s.malignant ? "rgba(255,80,80,0.5)" : "rgba(0,210,150,0.4)";
-          const hoverBg     = s.malignant ? "rgba(255,80,80,0.06)" : "rgba(0,210,150,0.06)";
+          const hoverBg = s.malignant ? "rgba(255,80,80,0.06)" : "rgba(0,210,150,0.06)";
           return (
             <button
               key={i}
@@ -743,12 +753,21 @@ function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: Fi
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function XPathologyPage() {
+  const [specialist, setSpecialist] = useState<"colon" | "brain">("colon");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+
+  const handleSpecialistChange = useCallback((s: "colon" | "brain") => {
+    setSpecialist(s);
+    setFile(null);
+    setPreview(null);
+    setResult(null);
+    setError(null);
+  }, []);
 
   const handleFile = useCallback((f: File) => {
     setFile(f);
@@ -784,6 +803,7 @@ export default function XPathologyPage() {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("specialist", specialist);
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 60000);
@@ -854,7 +874,7 @@ export default function XPathologyPage() {
                 marginBottom: 14,
               }}
             >
-              9-Class · Temperature Calibrated · XAI · Dual-Persona Reporting
+              Multi-Model · Temperature Calibrated · XAI · Dual reporting
             </p>
             <h1
               style={{
@@ -867,7 +887,7 @@ export default function XPathologyPage() {
                 marginBottom: 18,
               }}
             >
-              Colorectal Cancer Screening
+              AI Oncology Screening
               <br />
               <span
                 style={{
@@ -878,7 +898,7 @@ export default function XPathologyPage() {
                   backgroundClip: "text",
                 }}
               >
-                from Histopathology
+                Platform
               </span>
             </h1>
             <p
@@ -890,12 +910,14 @@ export default function XPathologyPage() {
                 lineHeight: 1.7,
               }}
             >
-              Upload an H&amp;E stained colorectal tissue patch. The EfficientNetB1
-              Colon Specialist classifies 9 tissue types with temperature-calibrated
-              confidence, Grad-CAM visualizes the decision, and Gemini writes
-              both a clinical report and a plain-English patient summary.
+              Select a specialized model and upload your medical scan. Our pipeline provides
+              temperature-calibrated predictions, Grad-CAM explainability heatmaps, and comprehensive
+              Dual-Persona reporting powered by Gemini API.
             </p>
           </section>
+
+          {/* ── Specialist Selector ── */}
+          <SpecialistSelector selected={specialist} onChange={handleSpecialistChange} />
 
           {/* ── Upload Panel ── */}
           <section
@@ -918,10 +940,11 @@ export default function XPathologyPage() {
                 marginBottom: 16,
               }}
             >
-              Step 01 — Upload Colorectal Slide
+              Step 01 — Upload {specialist === "colon" ? "Colorectal Slide" : "Brain MRI"}
             </p>
 
             <UploadZone
+              specialist={specialist}
               onFile={handleFile}
               preview={preview}
               isDragging={isDragging}
@@ -930,7 +953,13 @@ export default function XPathologyPage() {
               onDrop={handleDrop}
             />
 
-            <SampleGallery onSampleSelect={handleFile} disabled={loading} />
+            {specialist === "colon" ? (
+              <SampleGallery onSampleSelect={handleFile} disabled={loading} />
+            ) : (
+              <div style={{ marginTop: 24, textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>
+                <p>Ensure your MRI scan is clearly visible and follows the T1-weighted axial-plane view for best results.</p>
+              </div>
+            )}
 
             {file && (
               <div
@@ -989,7 +1018,7 @@ export default function XPathologyPage() {
                 marginBottom: "2rem",
               }}
             >
-              <Spinner />
+              <Spinner specialist={specialist} />
             </section>
           )}
 
@@ -1044,11 +1073,31 @@ export default function XPathologyPage() {
                 />
               </div>
 
+              {/* Anatomical Note Warning Banner */}
+              {result.anatomical_note && (
+                <div style={{
+                  marginBottom: "1.5rem",
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  background: "rgba(251,191,36,0.1)",
+                  border: "1px solid rgba(251,191,36,0.3)",
+                  color: "#fcd34d",
+                  fontSize: "0.85rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8
+                }}>
+                  <span style={{ fontSize: "1.1rem" }}>⚠️</span>
+                  <span><strong>Anatomical note:</strong> {result.anatomical_note}</span>
+                </div>
+              )}
+
               {/* Processing stats */}
               <div style={{ marginBottom: "1.5rem" }}>
                 <ProcessingStats
                   time={result.processing_time_s}
                   temperature={result.temperature_applied}
+                  specialist={result.specialist || specialist}
                 />
               </div>
 
@@ -1090,7 +1139,7 @@ export default function XPathologyPage() {
                           color: "var(--fg)",
                         }}
                       >
-                        Original H&amp;E Slide
+                        {(result.specialist || specialist) === "brain" ? "Original MRI Scan" : "Original H&amp;E Slide"}
                       </span>
                       <span
                         style={{
@@ -1181,6 +1230,8 @@ export default function XPathologyPage() {
                   <ProbabilityBreakdown
                     breakdown={result.probability_breakdown}
                     predicted={result.prediction}
+                    severity={result.severity}
+                    specialist={result.specialist || specialist}
                   />
                 </div>
 
@@ -1189,7 +1240,7 @@ export default function XPathologyPage() {
                   style={{ display: "flex", flexDirection: "column", gap: 16 }}
                 >
                   <ReportCard
-                    title="Clinical Pathology Report"
+                    title={result.specialist === "brain" ? "Radiology Report" : "Histopathology Report"}
                     tag="For Clinicians"
                     content={reportSections.clinical}
                     accent="var(--accent-blue)"

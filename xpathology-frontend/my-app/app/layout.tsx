@@ -22,9 +22,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "X-Pathology — AI-Assisted Colorectal Oncology Screening",
+  title: "X-Pathology — AI Oncology Screening | Colon & Brain Tumor Analysis",
   description:
-    "Upload H&E stained colorectal histopathology patches for 9-class tissue classification. Powered by EfficientNetB1 with temperature-calibrated confidence, Grad-CAM XAI, and Gemini dual-persona clinical reporting. Built by AgenticEra Systems.",
+    "AI-assisted histopathology and MRI analysis. EfficientNet CNN + Grad-CAM + Gemini dual reporting.",
   keywords: [
     "histopathology",
     "AI pathology",

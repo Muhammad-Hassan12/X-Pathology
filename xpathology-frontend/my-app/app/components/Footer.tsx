@@ -156,7 +156,7 @@ export default function Footer() {
               letterSpacing: "0.08em",
             }}
           >
-            v3.0 · EfficientNetB1
+            v4.0 · Multi-Specialist
           </span>
         </div>
       </div>
@@ -164,7 +164,7 @@ export default function Footer() {
   );
 }
 
-/* Inline SVG Icons */
+
 function GitHubIcon({ size = 16 }: { size?: number }) {
   return (
     <svg
