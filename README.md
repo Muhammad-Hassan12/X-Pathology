@@ -2,7 +2,7 @@
 
 # X-Pathology 🔬
 
-### Explainable AI-Assisted Colorectal Oncology Screening
+### Explainable AI-Assisted Multi-Specialist Oncology Screening
 
 **Classify · Explain · Report — in one pipeline.**
 
@@ -11,7 +11,7 @@
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
 [![Gemini](https://img.shields.io/badge/Gemini_2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![Hugging Face](https://img.shields.io/badge/🤗_Hugging_Face-FFD21E?style=for-the-badge)](https://huggingface.co/rarfileexe/Xpathology-Colon-Specialist)
+[![Hugging Face](https://img.shields.io/badge/🤗_Hugging_Face-FFD21E?style=for-the-badge)](https://huggingface.co/rarfileexe)
 
 ---
 
@@ -37,6 +37,8 @@
 - [Key Features](#-key-features)
 - [Architecture & Pipeline](#-architecture--pipeline)
 - [Supported Classifications](#-supported-classifications)
+  - [Colon Specialist (9-Class)](#1-colon-specialist-9-class-histopathology)
+  - [Brain Specialist (4-Class)](#2-brain-specialist-4-class-mri)
 - [Tech Stack](#-tech-stack)
 - [Project Structure](#-project-structure)
 - [Getting Started](#-getting-started)
@@ -53,11 +55,9 @@
 
 ## 🧬 Overview
 
-**X-Pathology** is an end-to-end **Explainable AI (XAI)** pipeline designed to bridge the gap between deep learning diagnostics and clinical interpretability. Built to analyze **H&E-stained colorectal histopathology patches**, this system provides rapid, transparent, and highly calibrated 9-class tissue classification for colorectal tissue analysis.
+**X-Pathology** is an end-to-end **Explainable AI (XAI)** platform designed to bridge the gap between deep learning diagnostics and clinical interpretability. In its V4 iteration, the platform has evolved into a **Multi-Specialist Architecture**, providing rapid, transparent, and highly calibrated classifications for both **Colorectal Histopathology** and **Brain Tumor MRIs**.
 
-Instead of relying on a "black box" prediction, X-Pathology employs a **multimodal architecture** that visually explains its reasoning through Grad-CAM heatmaps and generates compassionate, human-readable reports via Google's Gemini LLM — producing **dual-persona output** for both oncologists and patients.
-
-Here is the Repo link of the training process of the model, used in this project: https://github.com/Muhammad-Hassan12/Cancer-Prediction-Model-2.0
+Instead of relying on a "black box" prediction, X-Pathology employs a **multimodal architecture** that visually explains its reasoning through dynamic Grad-CAM heatmaps. It then leverages Google's Gemini LLM via Domain-Adapted Prompting to generate compassionate, human-readable reports — producing **dual-persona output** tailored for both medical professionals (Pathologists/Radiologists) and patients.
 
 > **Why X-Pathology?**  
 > The "X" stands for **Explainability** — the core philosophy that every AI prediction in a medical context must be transparent, interpretable, and verifiable by a human expert.
@@ -68,67 +68,65 @@ Here is the Repo link of the training process of the model, used in this project
 
 | Feature | Description |
 |---|---|
-| **9-Class Tissue Classification** | Classifies colorectal histopathology into 9 distinct tissue types (ADI, BACK, DEB, LYM, MUC, MUS, NORM, STR, TUM) using a fine-tuned EfficientNetB1 backbone. |
-| **Temperature-Calibrated Confidence** | Post-training temperature scaling (T=0.5576) ensures confidence values are statistically calibrated — critical for clinical decision-support. |
-| **External Holdout Validation** | Independently validated on CRC-VAL-HE-7K — a completely separate dataset from different scanning equipment — achieving 92.7% accuracy. |
-| **Grad-CAM Visual Explainability** | Custom XAI layer generates precise heatmaps highlighting the exact cellular structures and architectural aberrations driving CNN predictions. |
-| **Dual-Persona LLM Reporting** | Gemini 2.5 Flash acts as a clinical safety layer — visually verifying the heatmap and generating both a dense **Clinical Pathology Report** (for oncologists) and a jargon-free **Patient-Facing Summary**. |
-| **9-Class Probability Breakdown** | Full probability distribution across all 9 tissue classes displayed as an interactive bar chart in the results dashboard. |
-| **Interactive Sample Gallery** | Pre-loaded histopathology slides for instant demo — no upload needed. Reviewers can test immediately. |
-| **Medical Disclaimer System** | First-visit modal with persistent acknowledgement, plus a permanent footer warning banner ensuring responsible use. |
-| **Decoupled Architecture** | Async FastAPI backend (Docker-optimized) + premium Next.js 16 dark UI — fully decoupled for independent scaling. |
-| **Production Security** | Rate limiting via `slowapi`, CORS configuration, file size validation, request timeouts, and environment-variable-based secrets management. |
+| **Multi-Specialist Routing** | Dynamic backend routing seamlessly switches between the Colon Specialist (EfficientNetB1) and the Brain Specialist (EfficientNetB0) based on user selection. |
+| **Broad Classification Scope** | 9-class colorectal tissue classification (H&E patches) and 4-class brain tumor classification (T1-weighted axial MRIs). |
+| **Temperature-Calibrated Confidence** | Post-training temperature scaling (T=0.5576 for Colon, T=0.7867 for Brain) ensures confidence values are statistically calibrated for clinical decision-support. |
+| **Grad-CAM Visual Explainability** | Dynamic XAI layer targeting specific convolutional blocks (`block7a_project_bn` or `top_conv`) to generate precise heatmaps highlighting the exact structures driving CNN predictions. |
+| **Anatomical Plausibility Checks** | Advanced heuristic checks on Brain MRI heatmaps to flag out-of-bounds activations (e.g., pituitary activations outside the expected lower-center region). |
+| **Domain-Adapted LLM Reporting** | Gemini 2.5 Flash visually verifies the heatmap and generates a **Clinical Report** (using pathology or radiology terminology depending on the specialist) alongside a jargon-free **Patient-Facing Summary**. |
+| **Probability Breakdown** | Full probability distribution across all classes displayed as an interactive bar chart in the results dashboard. |
+| **Decoupled Architecture** | Async FastAPI backend (Docker-optimized) + premium Next.js 16 dark UI — fully decoupled for independent scaling and Hugging Face Spaces deployment. |
+| **Production Security** | Rate limiting via `slowapi`, CORS configuration, file size validation, 60-second fetch timeouts for cold starts, and environment-variable-based secrets management. |
 
 ---
 
 ## 🏗️ Architecture & Pipeline
 
-```
+```text
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│                           X-PATHOLOGY V3 PIPELINE                            │
+│                           X-PATHOLOGY V4 PIPELINE                            │
 ├──────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
-│   ┌──────────────┐     ┌──────────────────┐     ┌──────────────────────────┐  │
-│   │   Next.js    │     │    FastAPI       │     │    Model Inference       │  │
-│   │   Frontend   │────▶│    Backend       │────▶│    (EfficientNetB1)     │  │
-│   │              │     │                  │     │                          │  │
-│   │  • Upload    │     │  • Image decode  │     │  • 240×240 preprocessing │  │
-│   │  • Sample    │     │  • Validation    │     │  • 9-class logits        │  │
-│   │    Gallery   │     │  • Rate limiting │     │  • Temperature scaling   │  │
-│   └──────────────┘     └────────┬─────────┘     └─────────┬────────────────┘  │
-│                                │                          │                   │
-│                                │                          ▼                   │
-│                                │                ┌──────────────────────┐      │
-│                                │                │   Grad-CAM Engine    │      │
-│                                │                │                      │      │
-│                                │                │  • GradientTape      │      │
-│                                │                │  • block7a_project_bn│      │
-│                                │                │  • OpenCV overlay    │      │
-│                                │                └──────────┬───────────┘      │
-│                                │                           │                  │
-│                                │                           ▼                  │
-│                                │                ┌──────────────────────┐      │
-│                                │                │  Gemini 2.5 Flash    │      │
-│                                │                │  (LLM Guardrail)     │      │
-│                                │                │                      │      │
-│                                │                │  • Visual verify     │      │
-│                                │                │  • Dual-persona      │      │
-│                                │                │    report gen        │      │
-│   ┌─────────────┐              │                └──────────┬───────────┘      │
-│   │  Results     │◀────────────┴─────────────────────────────┘               │
-│   │  Dashboard   │                                                            │
-│   │              │     Response payload:                                       │
-│   │  • Original  │     ┌─────────────────────────────────────┐               │
-│   │    slide     │     │ • prediction       (class code)     │               │
-│   │  • Grad-CAM  │     │ • prediction_display (full name)    │               │
-│   │    overlay   │     │ • severity         (Malignant/Benign)│              │
-│   │  • Prob bars │     │ • confidence       (calibrated %)   │               │
-│   │  • Clinical  │     │ • temperature_applied (T value)     │               │
-│   │    report    │     │ • probability_breakdown (9-class)   │               │
-│   │  • Patient   │     │ • gradcam_base64   (heatmap image)  │               │
-│   │    summary   │     │ • full_report      (LLM text)       │               │
-│   └─────────────┘     │ • processing_time_s (seconds)       │               │
-│                        └─────────────────────────────────────┘               │
+│   ┌──────────────┐     ┌──────────────────┐     ┌──────────────────────────┐ │
+│   │   Next.js    │     │    FastAPI       │     │     Dynamic Routing      │ │
+│   │   Frontend   │────▶│    Backend       │────▶│      (Specialist)        │ │
+│   │              │     │                  │     │                          │ │
+│   │  • Select    │     │  • Image decode  │     │  ▶ Colon (EffNetB1)      │ │
+│   │    Specialist│     │  • Validation    │     │  ▶ Brain (EffNetB0)      │ │
+│   │  • Upload    │     │  • Rate limiting │     │                          │ │
+│   └──────────────┘     └────────┬─────────┘     └─────────┬────────────────┘ │
+│                                 │                         │                  │
+│                                 │                         ▼                  │
+│                                 │               ┌──────────────────────┐     │
+│                                 │               │   Grad-CAM Engine    │     │
+│                                 │               │                      │     │
+│                                 │               │ • Target conv layer  │     │
+│                                 │               │ • Anatomical checks  │     │
+│                                 │               │ • OpenCV overlay     │     │
+│                                 │               └──────────┬───────────┘     │
+│                                 │                          │                 │
+│                                 │                          ▼                 │
+│                                 │               ┌──────────────────────┐     │
+│                                 │               │  Gemini 2.5 Flash    │     │
+│                                 │               │  (Domain-Adapted)    │     │
+│                                 │               │                      │     │
+│                                 │               │ • Visual verify      │     │
+│                                 │               │ • Dual-persona       │     │
+│                                 │               │   report generation  │     │
+│   ┌─────────────┐               │               └──────────┬───────────┘     │
+│   │  Results    │◀──────────────┴──────────────────────────┘                 │
+│   │  Dashboard  │                                                            │
+│   │             │     Response payload:                                      │
+│   │ • Slide/MRI │     ┌────────────────────────────────────────────────┐     │
+│   │ • Grad-CAM  │     │ • prediction       (class code)                │     │
+│   │ • Prob bars │     │ • prediction_display (full name)               │     │
+│   │ • Clinical  │     │ • severity         (Malignant/Benign)          │     │
+│   │   report    │     │ • confidence       (calibrated %)              │     │
+│   │ • Patient   │     │ • temperature_applied (T value)                │     │
+│   │   summary   │     │ • probability_breakdown (N-class dictionary)   │     │
+│   └─────────────┘     │ • gradcam_base64   (heatmap image)             │     │
+│                       │ • full_report      (LLM text)                  │     │
+│                       └────────────────────────────────────────────────┘     │
 │                                                                              │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -137,17 +135,18 @@ Here is the Repo link of the training process of the model, used in this project
 
 | Step | Component | Description |
 |:----:|-----------|-------------|
-| **01** | **Upload H&E Patch** | User uploads a colorectal histopathology tissue patch (JPEG/PNG/TIFF) via drag-and-drop, file picker, or by selecting from the pre-loaded sample gallery. |
-| **02** | **EfficientNetB1 CNN Inference** | The image is resized to 240×240, and passed through the fine-tuned EfficientNetB1 Colon Specialist. Temperature-scaled softmax produces calibrated probability scores across 9 tissue types. |
-| **03** | **Grad-CAM XAI Heatmap** | `tf.GradientTape` computes gradients against the predicted class through the final convolutional block (`block7a_project_bn`). The resulting heatmap is resized, colorized (JET), and superimposed on the original slide at 60/40 opacity. |
-| **04** | **Gemini LLM Analysis** | Both the original slide *and* the Grad-CAM overlay are sent to Google's Gemini 2.5 Flash multimodal model with a structured clinical prompt. The LLM visually verifies the heatmap focus areas and generates a structured dual-persona report. |
-| **05** | **Dual-Persona Report** | The frontend renders: the original input, the explainability overlay, a 9-class probability breakdown, a **Clinical Pathology Report** (dense, technical — for oncologists), and a **Patient-Facing Summary** (compassionate, plain-English — for patients). |
+| **01** | **Upload Scan** | User selects a specialist (Colon or Brain) and uploads a scan (H&E patch or MRI) via drag-and-drop or the pre-loaded sample gallery. |
+| **02** | **CNN Inference** | The image is routed to the appropriate EfficientNet backbone. Temperature-scaled softmax produces calibrated probability scores. |
+| **03** | **Grad-CAM XAI** | `tf.GradientTape` computes gradients through the model-specific final convolutional block. The heatmap is colorized (JET) and superimposed on the original scan. Brain MRIs undergo anatomical plausibility checks. |
+| **04** | **Domain-Adapted LLM** | Both the original scan and Grad-CAM overlay are sent to Gemini 2.5 Flash. The prompt dynamically adapts to be a Pathologist (Colon) or Radiologist (Brain) to generate a highly contextual report. |
+| **05** | **Results Dashboard** | The frontend renders the original input, explainability overlay, interactive probability breakdown, a **Clinical Report**, and a **Patient-Facing Summary**. |
 
 ---
 
 ## 🎯 Supported Classifications
 
-The EfficientNetB1 Colon Specialist classifies H&E-stained colorectal histopathology patches into **9 tissue categories**:
+### 1. Colon Specialist (9-Class Histopathology)
+*Architecture: EfficientNetB1 | Resolution: 240×240*
 
 | # | Code | Full Name | Type | Description |
 |:-:|:----:|-----------|:----:|-------------|
@@ -159,9 +158,17 @@ The EfficientNetB1 Colon Specialist classifies H&E-stained colorectal histopatho
 | 6 | **MUS** | Smooth Muscle | 🟢 Benign | Muscularis propria / muscularis mucosae |
 | 7 | **NORM** | Normal Colon Mucosa | 🟢 Benign | Healthy epithelial glandular tissue |
 | 8 | **STR** | Cancer-Associated Stroma | 🟢 Benign | Desmoplastic stromal reaction tissue |
-| 9 | **TUM** | Colorectal Adenocarcinoma (Tumour) | 🔴 Malignant | Tumour epithelium — neoplastic |
+| 9 | **TUM** | Colorectal Adenocarcinoma | 🔴 Malignant | Tumour epithelium — neoplastic |
 
-> **Note on MUS/STR:** Smooth muscle and cancer-associated stroma are histologically similar under H&E at patch level — this is a known hard pair in colorectal CPath literature. Crucially, both are non-neoplastic, so MUS↔STR confusion carries no clinical consequence for the primary cancer/non-cancer determination.
+### 2. Brain Specialist (4-Class MRI)
+*Architecture: EfficientNetB0 | Resolution: 224×224*
+
+| # | Code | Full Name | Type | Description |
+|:-:|:----:|-----------|:----:|-------------|
+| 1 | **glioma** | Glioma Tumor | 🔴 High Concern | Tumors arising from glial cells |
+| 2 | **meningioma** | Meningioma Tumor | 🔴 High Concern | Tumors forming on membranes covering the brain |
+| 3 | **pituitary** | Pituitary Tumor | 🟡 Moderate | Tumors in the pituitary gland |
+| 4 | **notumor** | No Tumor Detected | 🟢 Benign | Healthy brain MRI, no visible masses |
 
 ---
 
@@ -180,12 +187,11 @@ The EfficientNetB1 Colon Specialist classifies H&E-stained colorectal histopatho
 | Technology | Role |
 |------------|------|
 | **Python** / **FastAPI** / **Uvicorn** | High-performance async API server with automatic OpenAPI docs |
-| **TensorFlow** / **Keras** | Deep learning framework powering the EfficientNetB1 Colon Specialist model |
-| **OpenCV** (Headless) | Image preprocessing, Grad-CAM heatmap colorization, and overlay compositing |
+| **TensorFlow** / **Keras** | Deep learning framework powering the CNN Specialist models |
+| **OpenCV** (Headless) | Image preprocessing, Grad-CAM heatmap colorization, and overlays |
 | **Google Generative AI SDK** | Gemini 2.5 Flash multimodal LLM for clinical report generation |
-| **Hugging Face Hub** | Cloud-hosted model registry for versioned CNN weight and calibration asset management |
+| **Hugging Face Hub** | Cloud-hosted model registry for versioned CNN weights and assets |
 | **SlowAPI** | Rate limiting middleware (5 requests/minute per client) |
-| **python-dotenv** | Secure environment variable management |
 
 ### Infrastructure & DevOps
 | Technology | Role |
@@ -197,40 +203,26 @@ The EfficientNetB1 Colon Specialist classifies H&E-stained colorectal histopatho
 
 ## 📁 Project Structure
 
-```
+```text
 X-Pathology/
 ├── README.md
-├── .gitattributes
-│
 ├── xpathology-backend/                 # FastAPI Backend
-│   ├── main.py                         # Core API — inference, Grad-CAM, Gemini integration
+│   ├── main.py                         # Core API — multi-model inference, Grad-CAM, Gemini
 │   ├── requirements.txt                # Python dependencies
-│   ├── Dockerfile                      # Production container (Python 3.10-slim)
-│   ├── .env.example                    # Environment variable template
-│   └── .gitignore
+│   ├── Dockerfile                      # Production HF Spaces container
+│   └── .env.example                    # Environment variable template
 │
-└── xpathology-frontend/               # Next.js Frontend
+└── xpathology-frontend/                # Next.js Frontend
     └── my-app/
         ├── app/
         │   ├── layout.tsx              # Root layout — fonts, metadata, SEO
-        │   ├── page.tsx                # Main analysis page — upload, results dashboard
-        │   ├── globals.css             # Design system — CSS variables, animations, utilities
-        │   ├── Favicon.png             # App favicon
-        │   ├── about/
-        │   │   └── page.tsx            # About page — architecture evolution, team, tech stack
-        │   └── components/
-        │       ├── Header.tsx          # Sticky header — nav, branding, GitHub link
-        │       ├── Footer.tsx          # Footer — disclaimer banner, social links, status
-        │       └── DisclaimerModal.tsx  # First-visit medical disclaimer (localStorage persisted)
-        ├── public/
-        │   └── sample/                 # Pre-loaded sample histopathology slides
-        │       ├── colon_aca_sample.jpg
-        │       └── colon_n_sample.jpg
+        │   ├── page.tsx                # Main dashboard — upload, results, fetch logic
+        │   ├── globals.css             # Design system
+        │   ├── about/page.tsx          # Interactive whitepaper & architecture documentation
+        │   └── components/             # Reusable UI components (SpecialistSelector, Footer, etc.)
+        ├── public/sample/              # Pre-loaded sample medical scans
         ├── package.json
-        ├── tsconfig.json
-        ├── next.config.ts
-        ├── postcss.config.mjs
-        └── eslint.config.mjs
+        └── next.config.ts
 ```
 
 ---
@@ -266,26 +258,10 @@ pip install -r requirements.txt
 
 #### Configure Environment Variables
 
-Copy the example and add your keys:
-
 ```bash
 cp .env.example .env
 ```
-
-Then edit `.env`:
-
-```env
-GEMINI_API_KEY=your_google_gemini_api_key_here
-
-# Optional
-HF_TOKEN=                       # Required only for private HF repos
-HF_REPO_ID=rarfileexe/Xpathology-Colon-Specialist
-HF_MODEL_FILE=xpathology_colon_specialist_b1.keras
-TEMPERATURE=0.5576              # Fallback if temperature_value.npy not found
-ALLOWED_ORIGINS=*               # Comma-separated allowed CORS origins
-HOST=0.0.0.0
-PORT=8000
-```
+Edit `.env` and add your `GEMINI_API_KEY`.
 
 #### Start the Backend Server
 
@@ -321,15 +297,11 @@ npm run dev
 | Variable | Required | Default | Description |
 |----------|:--------:|---------|-------------|
 | `GEMINI_API_KEY` | ✅ | — | Google Gemini API key for LLM report generation |
-| `HF_TOKEN` | ❌ | — | Hugging Face access token (only for private model repos) |
-| `HF_REPO_ID` | ❌ | `rarfileexe/Xpathology-Colon-Specialist` | Hugging Face model repository ID |
-| `HF_MODEL_FILE` | ❌ | `xpathology_colon_specialist_b1.keras` | Model weights filename in HF repo |
-| `TEMPERATURE` | ❌ | `0.5576` | Calibration temperature (fallback if .npy not in repo) |
 | `ALLOWED_ORIGINS` | ❌ | `*` | Comma-separated CORS allowed origins |
 | `HOST` | ❌ | `0.0.0.0` | Server bind host |
 | `PORT` | ❌ | `7860` | Server bind port |
 
-### Frontend
+### Frontend (`xpathology-frontend/my-app/.env.local`)
 
 | Variable | Required | Default | Description |
 |----------|:--------:|---------|-------------|
@@ -339,40 +311,18 @@ npm run dev
 
 ## 🐳 Docker Deployment
 
-The backend includes a production-ready Dockerfile optimized for **Hugging Face Spaces** deployment:
-
-```dockerfile
-FROM python:3.10-slim
-WORKDIR /app
-
-# Layer-cached dependency installation
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
-
-# Non-root user for security
-RUN useradd -m -u 1000 user
-USER user
-
-COPY --chown=user:user . /app
-EXPOSE 7860
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "7860"]
-```
-
-### Build & Run Locally
+The backend includes a production-ready Dockerfile optimized for **Hugging Face Spaces**:
 
 ```bash
 cd xpathology-backend
-
 docker build -t xpathology-backend .
 docker run -p 7860:7860 --env-file .env xpathology-backend
 ```
 
-### Key Optimizations
-
-- **Layer caching:** `requirements.txt` is copied and installed *before* source code, so rebuilds that only change application code skip the heavy ML dependency installation.
-- **Non-root execution:** Runs under a dedicated `user` account (UID 1000) following container security best practices.
-- **Slim base image:** `python:3.10-slim` minimizes attack surface and image size.
+**Key Optimizations:**
+- **Layer caching:** `requirements.txt` is installed before source code.
+- **Non-root execution:** Runs under a dedicated `user` account (UID 1000).
+- **Slim base image:** `python:3.11-slim` minimizes attack surface.
 
 ---
 
@@ -380,70 +330,38 @@ docker run -p 7860:7860 --env-file .env xpathology-backend
 
 | Measure | Implementation |
 |---------|----------------|
-| **Rate Limiting** | `slowapi` middleware limits API requests to **5/minute per client IP**, protecting against DoS attacks and Gemini API quota exhaustion. |
-| **Thread Pooling** | Heavy TensorFlow inference and synchronous OpenCV operations are routed through `fastapi.concurrency.run_in_threadpool` to prevent async event-loop blocking. |
-| **File Size Validation** | Uploaded files are capped at **10 MB** with server-side validation before processing. |
-| **MIME Type Validation** | Only JPEG, PNG, and TIFF file types are accepted; all others are rejected with a 415 status. |
-| **Request Timeouts** | Frontend enforces a **60-second** `AbortController` timeout on API calls. |
-| **Secret Management** | All API keys are loaded from environment variables via `python-dotenv` — never hardcoded. The server refuses to start if `GEMINI_API_KEY` is missing. |
-| **CORS Configuration** | Configurable allowed origins via `ALLOWED_ORIGINS` environment variable. |
-| **Medical Disclaimer** | First-visit modal with `localStorage` persistence + persistent footer warning banner on every page. |
+| **Rate Limiting** | `slowapi` restricts API requests to **5/minute per client IP**. |
+| **Thread Pooling** | Synchronous OpenCV/TensorFlow operations run via `run_in_threadpool` to prevent async blocking. |
+| **File Validation** | Uploads capped at **10 MB** with strict MIME type checking (JPEG/PNG/TIFF). |
+| **Graceful Degradation**| If the Gemini API fails/timeouts, the backend gracefully catches the error and returns the CNN classification and Grad-CAM heatmap with a pre-written fallback notice. |
+| **Secret Management** | API keys loaded via `python-dotenv` — never hardcoded. |
 
 ---
 
 ## 🧠 Model Details
 
-| Property | Value |
-|----------|-------|
-| **Architecture** | EfficientNetB1 (fine-tuned) — Colon Specialist |
-| **Input Size** | 240 × 240 × 3 (RGB) |
-| **Output** | 9-class softmax (temperature-calibrated) |
-| **Calibration** | Post-training temperature scaling, T = 0.5576 |
-| **Internal Accuracy** | 99.1% (20% split of NCT-CRC-HE-100K) |
-| **External Holdout** | 92.7% (CRC-VAL-HE-7K — independent dataset) |
-| **TUM F1 Score** | 0.9558 on external holdout |
-| **Training Data** | [NCT-CRC-HE-100K](https://www.kaggle.com/datasets/imrankhan77/nct-crc-he-100k) |
-| **Validation Data** | [CRC-VAL-HE-7K](https://www.kaggle.com/datasets/imrankhan77/crc-val-he-7k) |
-| **Preprocessing** | No manual normalization — EfficientNetB1 handles internal normalization |
-| **Grad-CAM Target** | `block7a_project_bn` (final convolutional block) |
-| **Training Hardware** | Kaggle T4 × 2 (MirroredStrategy), mixed precision float16 |
-| **Hosted On** | [🤗 Hugging Face Hub](https://huggingface.co/rarfileexe/Xpathology-Colon-Specialist) |
-| **File** | `xpathology_colon_specialist_b1.keras` |
+Both models are hosted on the Hugging Face Hub and are dynamically downloaded and cached by the backend upon startup.
 
-The model is automatically downloaded from Hugging Face Hub at server startup. No manual download is required. Temperature calibration values are loaded from `temperature_value.npy` in the same repository.
+### 1. Colon Specialist
+- **Hub Repo:** [rarfileexe/Xpathology-Colon-Specialist](https://huggingface.co/rarfileexe/Xpathology-Colon-Specialist)
+- **Architecture:** EfficientNetB1
+- **Calibration:** T = 0.5576
+- **Performance:** 92.7% External Holdout Accuracy (CRC-VAL-HE-7K). TUM F1 Score = 0.9558.
+
+### 2. Brain Specialist
+- **Hub Repo:** [rarfileexe/xpathology-brain-specialist](https://huggingface.co/rarfileexe/xpathology-brain-specialist)
+- **Architecture:** EfficientNetB0
+- **Calibration:** T = 0.7867
+- **Performance:** 96.25% Holdout Accuracy (Masoud Nickparvar Dataset).
 
 ---
 
 ## 📈 Architecture Evolution
 
-X-Pathology underwent a significant architectural evolution across three major versions:
-
-### Version 1.0 — VGG16 Baseline *(Deprecated)*
-
-- **Architecture:** VGG16 (heavyweight, 150+ MB)
-- **Task:** Binary classification (Colon Adenocarcinoma vs. Normal)
-- **Issue:** The massive parameter count acting on a simple binary sigmoid output led to mathematical saturation — producing "100% confidence" predictions even on out-of-distribution data. In clinical settings, *nuance is critical*.
-
-### Version 2.0 — MobileNetV2 *(Superseded)*
-
-- **Architecture:** MobileNetV2 (8.6 MB — a **17× size reduction**)
-- **Task:** 5-class multi-organ classification (Colon + Lung)
-- **Strengths:**
-  - ✅ Cancer detection accurate
-  - ✅ 17× smaller than VGG16
-  - ✅ Eliminated binary overconfidence
-- **Critical Issue:** Although cancer detection was accurate, the model sometimes produced **organ-mismatched reports** — classifying colon tissue with a lung report and vice versa. This cross-organ confusion made the multi-organ approach unreliable for clinical-grade screening.
-
-### Version 3.0 — EfficientNetB1 Colon Specialist *(Current)*
-
-- **Architecture:** EfficientNetB1 (single-organ specialist)
-- **Task:** 9-class colorectal tissue classification
-- **Key Improvements:**
-  - ✅ **Single-Organ Focus** — Eliminated cross-organ confusion by focusing exclusively on colorectal tissue
-  - ✅ **9-Class Granularity** — Fine-grained tissue classification far beyond simple malignant/benign
-  - ✅ **Temperature Calibration** — Post-training temperature scaling (T=0.5576) for statistically calibrated confidence values
-  - ✅ **External Validation** — Independently validated on CRC-VAL-HE-7K (92.7% accuracy, TUM F1=0.9558)
-  - ✅ **Two-Phase Training** — Warm-up with frozen backbone + fine-tuning with unfrozen top 32% layers
+- **V1.0 (VGG16 Baseline):** Heavyweight (150MB) binary classification. Suffered from mathematical saturation and overconfidence.
+- **V2.0 (MobileNetV2):** Multi-organ 5-class model. Lightweight (8.6MB), but suffered from organ-mismatched reporting.
+- **V3.0 (Colon Specialist):** Dedicated EfficientNetB1 for 9-class colorectal tissue. Introduced temperature calibration, external validation, and Grad-CAM.
+- **V4.0 (Multi-Specialist):** Current architecture. Dynamic backend routing supporting multiple distinct specialist models (Colon + Brain), Domain-Adapted Gemini Prompting, and Anatomical Plausibility Checks.
 
 ---
 
@@ -489,8 +407,8 @@ X-Pathology underwent a significant architectural evolution across three major v
 > **IMPORTANT:** X-Pathology is developed by [AgenticEra Systems](https://www.linkedin.com/company/AgenticEra-Systems) for **research, portfolio, and educational purposes only**.
 
 - 🔬 This is an **AI-assisted screening prototype** — it is **NOT** FDA-approved diagnostic software.
-- ⚕️ It is **NOT** a substitute for professional diagnosis by a licensed, board-certified pathologist.
-- 📋 All AI-generated results **must be reviewed and verified** by a qualified medical professional.
+- ⚕️ It is **NOT** a substitute for professional diagnosis by a licensed, board-certified medical professional.
+- 📋 All AI-generated results **must be reviewed and verified** by a qualified expert.
 - 🚫 **Do NOT** make any clinical or treatment decisions based solely on this tool's output.
 
 ---
@@ -511,7 +429,7 @@ Contributions are welcome! If you'd like to improve **X-Pathology**:
 
 This project is Open-Source and available under [Apache-2.0 License](LICENSE)
 
-The model is released under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). The training datasets (NCT-CRC-HE-100K and CRC-VAL-HE-7K) are released under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) by Kather et al.
+The models are released under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0). Training datasets are credited to their respective original authors on Kaggle.
 
 ---
 
@@ -521,6 +439,6 @@ The model is released under the [Apache 2.0 License](https://www.apache.org/lice
   </sub>
   <br />
   <sub>
-    🔬 X-Pathology v3.0 · EfficientNetB1 Colon Specialist · 9-Class · Temperature Calibrated · Grad-CAM XAI · Gemini 2.5 Flash
+    🔬 X-Pathology v4.0 · Multi-Specialist Architecture · Temperature Calibrated · Grad-CAM XAI · Gemini 2.5 Flash
   </sub>
 </div>
