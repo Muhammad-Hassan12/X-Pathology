@@ -998,7 +998,7 @@ export default function AboutPage() {
             <PipelineStep
               step={5}
               icon="✨"
-              title="Gemini 2.5 Flash LLM Analysis"
+              title="Gemini 3.1 Flash Lite LLM Analysis"
               description="Both the original image and Grad-CAM overlay are sent to Gemini with domain-adapted prompts — pathology terminology for colon, radiology terminology for brain MRI. A dual-persona report is generated."
               delay={0.5}
             />
@@ -1044,7 +1044,7 @@ export default function AboutPage() {
                 icon: "⚛️",
               },
               {
-                name: "Gemini 2.5 Flash",
+                name: "Gemini 3.1 Flash Lite",
                 desc: "Google's multimodal LLM receives domain-adapted prompts per specialist, visually verifying heatmaps and generating dual-persona clinical reports.",
                 color: "#4285f4",
                 icon: "💎",

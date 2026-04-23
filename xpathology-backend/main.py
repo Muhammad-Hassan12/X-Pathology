@@ -421,12 +421,17 @@ Compassionate plain-English summary. Explain what was found, what the colour hea
     try:
         log.info("Requesting Gemini report...")
         response = gemini_client.models.generate_content(
-            model    = "gemini-2.5-flash",
+            model    = "gemini-3.1-flash-lite-preview",
             contents = [
                 prompt,
                 types.Part.from_bytes(data=pil_to_bytes(original_pil), mime_type="image/jpeg"),
                 types.Part.from_bytes(data=pil_to_bytes(overlay_pil),  mime_type="image/jpeg"),
             ],
+            config   = types.GenerateContentConfig(
+                thinking_config=types.ThinkingConfig(
+                    thinking_level="HIGH"
+                )
+            ),
         )
         report_text = response.text
         log.info("Gemini report received.")

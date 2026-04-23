@@ -9,7 +9,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js_16-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
-[![Gemini](https://img.shields.io/badge/Gemini_2.5_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Gemini](https://img.shields.io/badge/Gemini_3.1_Flash_Lite-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Hugging Face](https://img.shields.io/badge/🤗_Hugging_Face-FFD21E?style=for-the-badge)](https://huggingface.co/rarfileexe)
 
@@ -73,7 +73,7 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 | **Temperature-Calibrated Confidence** | Post-training temperature scaling (T=0.5576 for Colon, T=0.7867 for Brain) ensures confidence values are statistically calibrated for clinical decision-support. |
 | **Grad-CAM Visual Explainability** | Dynamic XAI layer targeting specific convolutional blocks (`block7a_project_bn` or `top_conv`) to generate precise heatmaps highlighting the exact structures driving CNN predictions. |
 | **Anatomical Plausibility Checks** | Advanced heuristic checks on Brain MRI heatmaps to flag out-of-bounds activations (e.g., pituitary activations outside the expected lower-center region). |
-| **Domain-Adapted LLM Reporting** | Gemini 2.5 Flash visually verifies the heatmap and generates a **Clinical Report** (using pathology or radiology terminology depending on the specialist) alongside a jargon-free **Patient-Facing Summary**. |
+| **Domain-Adapted LLM Reporting** | Gemini 3.1 Flash Lite visually verifies the heatmap and generates a **Clinical Report** (using pathology or radiology terminology depending on the specialist) alongside a jargon-free **Patient-Facing Summary**. |
 | **Probability Breakdown** | Full probability distribution across all classes displayed as an interactive bar chart in the results dashboard. |
 | **Decoupled Architecture** | Async FastAPI backend (Docker-optimized) + premium Next.js 16 dark UI — fully decoupled for independent scaling and Hugging Face Spaces deployment. |
 | **Production Security** | Rate limiting via `slowapi`, CORS configuration, file size validation, 60-second fetch timeouts for cold starts, and environment-variable-based secrets management. |
@@ -107,7 +107,7 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 │                                 │                          │                 │
 │                                 │                          ▼                 │
 │                                 │               ┌──────────────────────┐     │
-│                                 │               │  Gemini 2.5 Flash    │     │
+│                                 │               │ Gemini 3.1 Flash Lite│     │
 │                                 │               │  (Domain-Adapted)    │     │
 │                                 │               │                      │     │
 │                                 │               │ • Visual verify      │     │
@@ -138,7 +138,7 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 | **01** | **Upload Scan** | User selects a specialist (Colon or Brain) and uploads a scan (H&E patch or MRI) via drag-and-drop or the pre-loaded sample gallery. |
 | **02** | **CNN Inference** | The image is routed to the appropriate EfficientNet backbone. Temperature-scaled softmax produces calibrated probability scores. |
 | **03** | **Grad-CAM XAI** | `tf.GradientTape` computes gradients through the model-specific final convolutional block. The heatmap is colorized (JET) and superimposed on the original scan. Brain MRIs undergo anatomical plausibility checks. |
-| **04** | **Domain-Adapted LLM** | Both the original scan and Grad-CAM overlay are sent to Gemini 2.5 Flash. The prompt dynamically adapts to be a Pathologist (Colon) or Radiologist (Brain) to generate a highly contextual report. |
+| **04** | **Domain-Adapted LLM** | Both the original scan and Grad-CAM overlay are sent to Gemini 3.1 Flash Lite. The prompt dynamically adapts to be a Pathologist (Colon) or Radiologist (Brain) to generate a highly contextual report. |
 | **05** | **Results Dashboard** | The frontend renders the original input, explainability overlay, interactive probability breakdown, a **Clinical Report**, and a **Patient-Facing Summary**. |
 
 ---
@@ -189,7 +189,7 @@ Instead of relying on a "black box" prediction, X-Pathology employs a **multimod
 | **Python** / **FastAPI** / **Uvicorn** | High-performance async API server with automatic OpenAPI docs |
 | **TensorFlow** / **Keras** | Deep learning framework powering the CNN Specialist models |
 | **OpenCV** (Headless) | Image preprocessing, Grad-CAM heatmap colorization, and overlays |
-| **Google Generative AI SDK** | Gemini 2.5 Flash multimodal LLM for clinical report generation |
+| **Google Generative AI SDK** | Gemini 3.1 Flash Lite multimodal LLM for clinical report generation |
 | **Hugging Face Hub** | Cloud-hosted model registry for versioned CNN weights and assets |
 | **SlowAPI** | Rate limiting middleware (5 requests/minute per client) |
 
@@ -439,6 +439,6 @@ The models are released under the [Apache 2.0 License](https://www.apache.org/li
   </sub>
   <br />
   <sub>
-    🔬 X-Pathology v4.0 · Multi-Specialist Architecture · Temperature Calibrated · Grad-CAM XAI · Gemini 2.5 Flash
+    🔬 X-Pathology v4.0 · Multi-Specialist Architecture · Temperature Calibrated · Grad-CAM XAI · Gemini 3.1 Flash Lite
   </sub>
 </div>
