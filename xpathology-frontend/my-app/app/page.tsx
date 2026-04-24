@@ -409,18 +409,20 @@ function ProbabilityBreakdown({
 
           return (
             <div key={cls} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span
+              <div
                 style={{
                   fontFamily: "var(--font-mono)",
                   fontSize: "0.68rem",
                   color: isPredicted ? "var(--fg)" : "var(--muted)",
-                  width: 42,
+                  width: 110,
+                  minWidth: 110,
+                  whiteSpace: "nowrap",
                   flexShrink: 0,
                   fontWeight: isPredicted ? 600 : 400,
                 }}
               >
                 {cls}
-              </span>
+              </div>
               <div
                 style={{
                   flex: 1,
@@ -1222,6 +1224,17 @@ export default function XPathologyPage() {
                       >
                         🔴 Red/yellow = high CNN attention &nbsp;·&nbsp; 🔵
                         Blue = low attention
+                      </p>
+                      <p
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: "0.65rem",
+                          color: "rgba(255, 180, 0, 0.8)",
+                          marginTop: 8,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        ⚠️ Radiological Context: The Grad-CAM overlay illustrates broad regions of interest driving the AI's prediction. Due to spatial interpolation, highlighted areas may bleed beyond actual tumor structures. For investigational use only.
                       </p>
                     </div>
                   </div>
