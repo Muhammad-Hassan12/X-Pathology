@@ -654,7 +654,17 @@ function SampleGallery({ onSampleSelect, disabled, specialist }: { onSampleSelec
     try {
       const res = await fetch(sample.path);
       const blob = await res.blob();
-      const file = new File([blob], sample.path.split('/').pop() || 'sample.jpg', { type: blob.type });
+      
+      let mimeType = blob.type;
+      // Next.js dev server sometimes serves .jfif or unknown images as octet-stream
+      if (!mimeType || mimeType === "application/octet-stream") {
+        const ext = sample.path.split('.').pop()?.toLowerCase();
+        if (ext === "png") mimeType = "image/png";
+        else if (ext === "tiff" || ext === "tif") mimeType = "image/tiff";
+        else mimeType = "image/jpeg"; // jpg, jpeg, jfif
+      }
+      
+      const file = new File([blob], sample.path.split('/').pop() || 'sample.jpg', { type: mimeType });
       onSampleSelect(file);
     } catch (err) {
       console.error("Failed to load sample:", err);
