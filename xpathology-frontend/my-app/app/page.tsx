@@ -626,8 +626,8 @@ function ReportCard({
   );
 }
 
-function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: File) => void, disabled: boolean }) {
-  const SAMPLES = [
+function SampleGallery({ onSampleSelect, disabled, specialist }: { onSampleSelect: (file: File) => void, disabled: boolean, specialist: string }) {
+  const COLON_SAMPLES = [
     { code: "ADI", name: "Adipose Tissue", path: "/sample/Adipose Tissue.jpg", malignant: false },
     { code: "BACK", name: "Background", path: "/sample/Background.png", malignant: false },
     { code: "DEB", name: "Debris / Necrosis", path: "/sample/Debris  Necrosis.png", malignant: false },
@@ -639,6 +639,15 @@ function SampleGallery({ onSampleSelect, disabled }: { onSampleSelect: (file: Fi
     { code: "TUM", name: "Tumour (Sample 1)", path: "/sample/Colorectal Adenocarcinoma (Tumour).jpg", malignant: true },
     { code: "TUM", name: "Tumour (Sample 2)", path: "/sample/Colorectal Adenocarcinoma (Tumour)2.jpg", malignant: true },
   ];
+
+  const BRAIN_SAMPLES = [
+    { code: "notumor", name: "No Tumor", path: "/samples(brain)/No Tumor.jfif", malignant: false },
+    { code: "pituitary", name: "Pituitary Adenoma", path: "/samples(brain)/PituitaryAdenoma.jfif", malignant: true },
+    { code: "glioma", name: "Glioma", path: "/samples(brain)/glioma.jpeg", malignant: true },
+    { code: "meningioma", name: "Meningioma", path: "/samples(brain)/meningioma.jfif", malignant: true },
+  ];
+
+  const SAMPLES = specialist === "colon" ? COLON_SAMPLES : BRAIN_SAMPLES;
 
   const handleSelect = async (sample: typeof SAMPLES[0]) => {
     if (disabled) return;
@@ -955,10 +964,10 @@ export default function XPathologyPage() {
               onDrop={handleDrop}
             />
 
-            {specialist === "colon" ? (
-              <SampleGallery onSampleSelect={handleFile} disabled={loading} />
-            ) : (
-              <div style={{ marginTop: 24, textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>
+            <SampleGallery onSampleSelect={handleFile} disabled={loading} specialist={specialist} />
+            
+            {specialist === "brain" && (
+              <div style={{ marginTop: 12, textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>
                 <p>Ensure your MRI scan is clearly visible and follows the T1-weighted axial-plane view for best results.</p>
               </div>
             )}
