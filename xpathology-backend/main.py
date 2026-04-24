@@ -380,7 +380,7 @@ Confidence: {confidence:.1f}% (temperature-calibrated, T={spec_cfg['temperature'
 Generate a report with EXACTLY these two sections:
 
 **Section 1: Clinical Pathology Report**
-Dense technical analysis. Describe morphological features visible in the H&E image. Reference which structures the Grad-CAM heatmap highlighted and why they are consistent or inconsistent with the predicted tissue class. Use appropriate pathology terminology. Do NOT provide a final diagnosis — this is AI-assisted screening only.
+First, verify the image is actually an H&E stained histopathology slide. If it is completely out-of-domain (e.g., a car, an animal) or if it is a medical scan of the wrong modality/anatomy (e.g., a chest X-ray, a brain MRI, a skin lesion), state this mismatch clearly and refuse to provide a diagnosis or analyze the heatmap. Instruct the user to upload the correct scan type. If valid, provide a dense technical analysis describing morphological features. Describe how the general regions highlighted by the Grad-CAM heatmap relate to the predicted tissue class. CRITICAL: Grad-CAM heatmaps are low-resolution; slight spatial offsets are normal and do NOT indicate hallucination. Do not invalidate the CNN prediction based on minor misalignments, but do note if it highlights completely irrelevant background. Use appropriate pathology terminology. Do NOT provide a final diagnosis — this is AI-assisted screening only.
 
 **Section 2: Patient-Facing Summary**
 Compassionate plain-English summary. Explain what tissue type was found, what the colour heatmap means simply, and clearly state this is an AI research tool that must be reviewed by a qualified pathologist before any medical decision."""
@@ -407,7 +407,7 @@ Confidence: {confidence:.1f}% (temperature-calibrated, T={spec_cfg['temperature'
 Generate a report with EXACTLY these two sections:
 
 **Section 1: Radiology Report**
-Dense technical analysis. Reference T1-weighted MRI signal characteristics, anatomical location, and tumor morphology visible in the scan. Reference which structures the Grad-CAM heatmap highlighted and why they are consistent or inconsistent with the predicted class. Use appropriate radiology terminology. Do NOT provide a final diagnosis — this is AI-assisted screening only, not FDA approved.
+First, verify the image is actually a brain MRI scan. If it is completely out-of-domain (e.g., a car, an animal) or if it is a medical scan of the wrong modality/anatomy (e.g., a chest X-ray, an H&E slide, a skin lesion), state this mismatch clearly and refuse to provide a diagnosis or analyze the heatmap. Instruct the user to upload the correct scan type. If valid, provide a dense technical analysis. Reference MRI signal characteristics, anatomical location, and tumor morphology. Describe how the general regions highlighted by the Grad-CAM heatmap relate to the predicted class. CRITICAL: Grad-CAM heatmaps are low-resolution; slight spatial offsets are normal and do NOT indicate hallucination. Do not invalidate the CNN prediction based on minor misalignments, but do note if it highlights completely irrelevant background. Use appropriate radiology terminology. Do NOT provide a final diagnosis — this is AI-assisted screening only, not FDA approved.
 
 **Section 2: Patient-Facing Summary**
 Compassionate plain-English summary. Explain what was found, what the colour heatmap means simply, and clearly state this is an AI research tool, not FDA approved, and must be reviewed by a qualified radiologist before any medical decision."""
